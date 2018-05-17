@@ -1,0 +1,14 @@
+const path = require("path");
+const dbpath = `mongodb://${process.env.DB_HOST}/${process.env.DB_NAME}`;
+const FB_PAGE_TOKEN = process.env.PAGE_TOKEN;
+const FB_WEBHOOK_TOKEN = process.env.FB_WEBHOOK_TOKEN;
+const DEV_MODE = process.env.NODE_ENV === "development";
+
+module.exports = {
+	db: dbpath,
+	FB_PAGE_TOKEN,
+	FB_WEBHOOK_TOKEN,
+	DEV_MODE,
+	DEV_SHOP_ID: "5aef68434619c318f8343d89",
+	ROOT_DIR: path.join(__dirname, "../")
+};

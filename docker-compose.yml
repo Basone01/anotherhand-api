@@ -1,0 +1,25 @@
+version: '3'
+services:
+  app:
+    container_name: anotherhand-app
+    build: .
+    env_file:
+      - ./.env
+    volumes:
+      - ./src:/app/src
+    ports:
+      - 80:4000
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: anotherhand-db
+    image: mongo
+    volumes:
+      - ah-mongodb-vol:/data/db
+    ports:
+      - 27017:27017
+
+volumes:
+  ah-mongodb-vol:

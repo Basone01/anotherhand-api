@@ -1,0 +1,26 @@
+{
+	"name": "anotherhand-api",
+	"version": "1.0.0",
+	"main": "index.js",
+	"author": "DESKTOP-OK4OG5A\\Basone01 <basone01@hotmail.com>",
+	"license": "MIT",
+	"dependencies": {
+		"axios": "^0.18.0",
+		"body-parser": "^1.18.2",
+		"cors": "^2.8.4",
+		"express": "^4.16.2",
+		"mkdirp": "^0.5.1",
+		"mongoose": "^5.0.17",
+		"morgan": "^1.9.0",
+		"multer": "^1.3.0",
+		"sharp": "^0.20.2",
+		"opencv4nodejs": "4.4.0",
+		"dotenv": "^5.0.1"
+	},
+	"scripts": {
+		"start": "node index.js",
+		"dev": "nodemon index.js"
+	},
+	"devDependencies": {
+	}
+}
