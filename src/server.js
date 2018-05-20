@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const app = express();
-const FFA = require('./services/imageProcesser/compare');
 const port = process.env.PORT || 3000;
 const path = require('path');
 
@@ -16,10 +15,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
-applyRoutes(app);
 
 app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+applyRoutes(app);
+
+app.use((err, req, res, next) => {
+	console.error(err);
+	res.status(500).send(err.message);
 });
 
 app.listen(port, () => {
