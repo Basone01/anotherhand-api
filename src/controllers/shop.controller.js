@@ -3,18 +3,18 @@ const ShopModel = require('../models/shop');
 async function createShop (req, res, next) {
 	try {
 		const newShop = await ShopModel.create(req.body);
-		res.json(newShop);
+		return res.json(newShop);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 
 async function getShop (req, res, next) {
 	try {
 		const myShop = await ShopModel.findOne({}).populate('products');
-		res.json(myShop);
+		return res.json(myShop);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 
@@ -25,12 +25,12 @@ async function deleteShop (req, res, next) {
 			throw new Error('id is required');
 		}
 		const result = await ShopModel.deleteOne({ _id });
-		res.status(204).json({
+		return res.status(204).json({
 			success : true,
 			result
 		});
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 

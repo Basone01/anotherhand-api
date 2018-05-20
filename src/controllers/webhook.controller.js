@@ -7,10 +7,10 @@ function verifyWebhookAPI (req, res, next) {
 		req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN
 	) {
 		console.log('Validating webhook');
-		res.status(200).send(req.query['hub.challenge']);
+		return res.status(200).send(req.query['hub.challenge']);
 	} else {
 		console.error('Failed validation. Make sure the validation tokens match.');
-		res.sendStatus(403);
+		return res.sendStatus(403);
 	}
 }
 
@@ -40,9 +40,9 @@ function handleFacebookMessage (req, res, next) {
 			});
 		});
 
-		res.sendStatus(200);
+		return res.sendStatus(200);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 

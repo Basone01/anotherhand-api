@@ -54,9 +54,9 @@ async function createProduct (req, res, next) {
 				}
 			}
 		);
-		res.json(newProduct);
+		return res.json(newProduct);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 
@@ -66,22 +66,21 @@ async function getAllProducts (req, res, next) {
 		{};
 	try {
 		const products = await ProductModel.find(shop_detail);
-		res.json(products);
+		return res.json(products);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 
 async function getProductById (req, res, next) {
-	const detail =
-		config.DEV_MODE ? { shop_Id: config.DEV_SHOP_ID, _id: req.params.id } :
-		{ _id: req.params.id };
-
 	try {
-		const product = await ProductModel.find(detail);
-		res.json(product);
+		const product = await ProductModel.findById(req.params.id);
+		if (!product) {
+			throw new Error('not found');
+		}
+		return res.json(product);
 	} catch (error) {
-		next(error);
+		return next(error);
 	}
 }
 
