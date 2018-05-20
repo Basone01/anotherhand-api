@@ -10,10 +10,9 @@ mongoose.connect(config.db, (err) => {
 		console.log(err);
 	}
 });
+
 const db = mongoose.connection;
 
-db.on("error", () => {
-	console.log("MongoDB : I got some Error!!");
-});
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 module.exports = db;
