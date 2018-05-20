@@ -12,11 +12,8 @@ const productSchema = new Schema({
 	shop_Id: { required: true, type: SchemaTypes.ObjectId },
 	productId: { type: String, uppercase: true },
 	name: String,
-	defaultPrice: { type: Number, default: 0 },
-	model: String,
-	brand: String,
+	price: { type: Number, default: 0 },
 	description: String,
-	modelId: { type: String, uppercase: true },
 	images: { type: [ String ], required: true },
 	hasSize: { type: Boolean, default: false },
 	sizes: {
