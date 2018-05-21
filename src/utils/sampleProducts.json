@@ -1,0 +1,21 @@
+[
+	{
+		"name": "SDASDSD",
+		"imagePaths": [
+			"tem1.jpg",
+			"tem2.jpg",
+			"tem4.jpg",
+			"tem5.jpg"
+		]
+	},
+	{
+		"name": "SDASDSD2",
+		"imagePaths": [
+			"tem1.jpg",
+			"tem2.jpg",
+			"tem3.jpg",
+			"tem4.jpg",
+			"tem5.jpg"
+		]
+	}
+]

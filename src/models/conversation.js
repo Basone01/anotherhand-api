@@ -10,7 +10,8 @@ const conversationSchema = new Schema({
 			sender: { id: String },
 			recipient: { id: String },
 			timestamp: Number,
-			message: [ SchemaTypes.Mixed ]
+			message: [ SchemaTypes.Mixed ],
+			postback: [ SchemaTypes.Mixed ]
 		}
 	]
 });

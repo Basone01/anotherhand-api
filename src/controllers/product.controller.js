@@ -6,8 +6,11 @@ const path = require('path');
 const sharp = require('sharp');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+//tell sharp don't lock the original file to make sure it can be delete
 sharp.cache(false);
+
 async function createProduct (req, res, next) {
+	//bind shop id if in development
 	let product =
 		config.DEV_MODE ? {
 			...req.body,
@@ -18,34 +21,45 @@ async function createProduct (req, res, next) {
 	const { shop_Id, productId } = product;
 
 	try {
+		//shop must be exists
 		const shop = await ShopModel.findOne({ _id: product.shop_Id });
 		if (!shop) {
 			throw new Error("Your shop doesn't exist");
 		}
-		const folder = `public/images/${shop_Id}/${productId}`;
-		mkdirp(path.join(__dirname, '..', folder), (err, created) => {
+		//create folder path
+		const folder = path.join(__dirname, '..', `public/images/${shop_Id}/${productId}`);
+		//create folder
+		mkdirp(folder, (err, created) => {
 			if (err) {
 				throw err;
 			}
 		});
+
 		product.images = await Promise.all(
 			req.files.map(async (file) => {
 				try {
+					//resize and encode to jpeg and store in the folder that has created before
 					await sharp(file.path)
 						.resize(1024, 1024)
 						.max()
 						.jpeg()
-						.toFile(path.join(__dirname, '..', folder, file.filename + '.jpg'));
+						.toFile(path.join(folder, file.filename + '.jpg'));
+					//remove original file
 					fs.unlink(file.path, (err) => {
-						throw new Error(err.message);
+						if (err) {
+							throw new Error(err.message);
+						}
 					});
-					return folder + '/' + file.filename + '.jpg';
+					// return file name to array
+					return file.filename + '.jpg';
 				} catch (error) {
 					console.log(error.message);
 				}
 			})
 		);
+		//finished prepare data, then add it to database
 		const newProduct = await ProductModel.create(product);
+		//add refs to shop
 		const shopResult = await ShopModel.update(
 			{ _id: newProduct.shop_Id },
 			{
@@ -54,6 +68,7 @@ async function createProduct (req, res, next) {
 				}
 			}
 		);
+		//send the result back
 		return res.json(newProduct);
 	} catch (error) {
 		return next(error);
