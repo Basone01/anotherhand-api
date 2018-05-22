@@ -14,6 +14,7 @@ function getAttachmentId(filepathToUpload, token) {
     }))
     const file = fs.createReadStream(filepathToUpload)
     formData.append("filedata", file);
+
     return axios
         .create({
             headers: formData.getHeaders()
@@ -22,7 +23,7 @@ function getAttachmentId(filepathToUpload, token) {
         .then(response => response.data)
 }
 
-async function sendImage(targetUserID, imagePath, token) {
+async function sendImage(targetUserID, token, imagePath) {
     try {
         const { attachment_id } = await getAttachmentId(imagePath, token);
         axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
@@ -45,7 +46,24 @@ async function sendImage(targetUserID, imagePath, token) {
 
 }
 
+async function sendMessage(targetUserID, token, text) {
+    try {
+        axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
+            "recipient": {
+                "id": targetUserID
+            },
+            "message": {
+                text
+            }
+        })
+    } catch (error) {
+        throw error;
+    }
+
+}
+
 module.exports = {
     getAttachmentId,
-    sendImage
+    sendImage,
+    sendMessage
 }
