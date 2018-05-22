@@ -26,7 +26,7 @@ function getAttachmentId(filepathToUpload, token) {
 async function sendImage(targetUserID, token, imagePath) {
     try {
         const { attachment_id } = await getAttachmentId(imagePath, token);
-        axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
+        const { data } = await axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
             "recipient": {
                 "id": targetUserID
             },
@@ -40,6 +40,7 @@ async function sendImage(targetUserID, token, imagePath) {
 
             }
         })
+        return data;
     } catch (error) {
         throw error;
     }
@@ -48,7 +49,7 @@ async function sendImage(targetUserID, token, imagePath) {
 
 async function sendMessage(targetUserID, token, text) {
     try {
-        axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
+        const { data } = await axios.post(`https://graph.facebook.com/v2.6/me/messages?access_token=${token}`, {
             "recipient": {
                 "id": targetUserID
             },
@@ -56,11 +57,14 @@ async function sendMessage(targetUserID, token, text) {
                 text
             }
         })
+        return data;
     } catch (error) {
         throw error;
     }
 
 }
+
+
 
 module.exports = {
     getAttachmentId,
