@@ -58,6 +58,9 @@ async function createProduct(req, res, next) {
 				}
 			})
 		);
+		product.sizes = JSON.parse(product.sizes)
+		product.tags = JSON.parse(product.tags)
+		// console.log(JSON.stringify(product,null,3))
 		//finished prepare data, then add it to database
 		const newProduct = await ProductModel.create(product);
 		console.log(newProduct.images_full_path);
