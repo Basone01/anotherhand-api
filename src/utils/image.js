@@ -36,9 +36,9 @@ async function compareWithImgArray(loadedScreenshot, productImgArray) {
 		for (let i = 0; i < productImgArray.length; i++) {
 			// console.log(`at image ${i+1}`);
 			const matchedRate = await compareImage(loadedScreenshot, productImgArray[i]);
-			// console.log(`Rate : ${matchedRate}`);
+			console.log(`Rate : ${matchedRate}`);
 			
-			if (matchedRate > 0.9) {
+			if (matchedRate > 0.8) {
 				return productImgArray[i];
 			}
 		}
