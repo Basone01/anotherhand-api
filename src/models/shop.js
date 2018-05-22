@@ -9,11 +9,11 @@ const shopModel = new Schema({
 		type: String,
 		required: true
 	},
-	createDate: {
+	create_date: {
 		type: Date,
 		default: Date.now()
 	},
-	fbPageId: {
+	fb_page_id: {
 		type: String,
 		required: true,
 		unique:true

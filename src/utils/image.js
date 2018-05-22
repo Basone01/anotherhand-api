@@ -34,16 +34,15 @@ const compareImage = async (image, templateImage) => {
 async function compareWithImgArray(loadedScreenshot, productImgArray) {
 	try {
 		for (let i = 0; i < productImgArray.length; i++) {
-			console.log(`at image ${i+1}`);
-			const imageFullPath = path.join(__dirname, "testImages" , productImgArray[i]);
-			const matchedRate = await compareImage(loadedScreenshot, imageFullPath);
-			console.log(`Rate : ${matchedRate}`);
+			// console.log(`at image ${i+1}`);
+			const matchedRate = await compareImage(loadedScreenshot, productImgArray[i]);
+			// console.log(`Rate : ${matchedRate}`);
 			
 			if (matchedRate > 0.9) {
-				return imageFullPath;
+				return productImgArray[i];
 			}
 		}
-		console.log("===================================");
+		// console.log("===================================");
 		
 	} catch (error) {
 		throw error;
@@ -61,9 +60,11 @@ async function findMatchedProduct(screenshotUrl, productArray) {
 	try {
 		const loadedScreenshot = await downloadImageToBuffer(screenshotUrl);
 		for (let i = 0; i < productArray.length; i++) {
-			console.log("Matching with",productArray[i].name);
+			// console.log("Matching with",productArray[i].name);
+			// console.log(productArray[i].images_full_path);
 			
-			const imgPath = await compareWithImgArray(loadedScreenshot, productArray[i].imagePaths)
+			const imgPath = await compareWithImgArray(loadedScreenshot, productArray[i].images_full_path)
+			
 			if (imgPath) {
 				return { matchedProduct: productArray[i], matchedImage: imgPath };
 			}

@@ -9,25 +9,26 @@ const fs = require('fs');
 //tell sharp don't lock the original file to make sure it can be delete
 sharp.cache(false);
 
-async function createProduct (req, res, next) {
+async function createProduct(req, res, next) {
 	//bind shop id if in development
 	let product =
 		config.DEV_MODE ? {
 			...req.body,
-			shop_Id : config.DEV_SHOP_ID
+			shop_id: config.DEV_SHOP_ID
 		} :
-		req.body;
+			req.body;
 
-	const { shop_Id, productId } = product;
+	const { shop_id, product_id } = product;
 
 	try {
 		//shop must be exists
-		const shop = await ShopModel.findOne({ _id: product.shop_Id });
+		const shop = await ShopModel.findOne({ _id: product.shop_id });
 		if (!shop) {
 			throw new Error("Your shop doesn't exist");
 		}
 		//create folder path
-		const folder = path.join(__dirname, '..', `public/images/${shop_Id}/${productId}`);
+		product._id = new Types.ObjectId();
+		const folder = path.join(__dirname, '..', `public/images/${shop_id}/${product._id}`);
 		//create folder
 		mkdirp(folder, (err, created) => {
 			if (err) {
@@ -59,12 +60,14 @@ async function createProduct (req, res, next) {
 		);
 		//finished prepare data, then add it to database
 		const newProduct = await ProductModel.create(product);
+		console.log(newProduct.images_full_path);
+		
 		//add refs to shop
 		const shopResult = await ShopModel.update(
-			{ _id: newProduct.shop_Id },
+			{ _id: newProduct.shop_id },
 			{
-				$push : {
-					products : newProduct._id
+				$push: {
+					products: newProduct._id
 				}
 			}
 		);
@@ -75,10 +78,10 @@ async function createProduct (req, res, next) {
 	}
 }
 
-async function getAllProducts (req, res, next) {
+async function getAllProducts(req, res, next) {
 	const shop_detail =
-		config.DEV_MODE ? { shop_Id: config.DEV_SHOP_ID } :
-		{};
+		config.DEV_MODE ? { shop_id: config.DEV_SHOP_ID } :
+			{};
 	try {
 		const products = await ProductModel.find(shop_detail);
 		return res.json(products);
@@ -87,7 +90,7 @@ async function getAllProducts (req, res, next) {
 	}
 }
 
-async function getProductById (req, res, next) {
+async function getProductById(req, res, next) {
 	try {
 		const product = await ProductModel.findById(req.params.id);
 		if (!product) {

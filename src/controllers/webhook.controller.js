@@ -2,7 +2,7 @@ const config = require('../config');
 const ConversationModel = require('../models/conversation');
 const utils = require('../utils');
 const mockupProductsArray = require('../utils/sampleProducts.json');
-
+const ProductModel = require('../models/product');
 function verifyWebhookAPI(req, res, next) {
 	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN) {
 		console.log('Validating webhook');
@@ -70,7 +70,14 @@ async function catchImageAttachment(messageEntry) {
 			.helper
 			.asyncForEach(messaging, async (msg) => {
 				//catch only user message
-				if (msg.sender.id !== id && msg.message.attachments) {
+				console.log("ECHO",msg.message.is_echo);
+				if (msg.message.is_echo||msg.message.attachments===undefined) {
+					return
+				}
+				
+					//find all products 
+					const products = await ProductModel.find({})
+					//tell the customer I'm finding
 					utils
 						.facebookAPI
 						.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, "หาแปป...")
@@ -81,29 +88,29 @@ async function catchImageAttachment(messageEntry) {
 							//catch if it is image
 							if (attachment.type === 'image') {
 								console.log('I got an Image');
-								console.log(attachment.payload.url);
+								// console.log(attachment.payload.url);
 
 								/*
-Call an image search here
-findMatchedProduct accept image url and products from database to compare
-and will return object contain matchedProduct(object) and matchedImage(path)
-or return null if not found
-*/
+								Call an image search here
+								findMatchedProduct accept image url and products from database to compare
+								and will return object contain matchedProduct(object) and matchedImage(path)
+								or return null if not found
+								*/
 								const product = await utils
 									.image
-									.findMatchedProduct(attachment.payload.url, mockupProductsArray)
+									.findMatchedProduct(attachment.payload.url, products)
 								if (!product) {
 									console.log("Not Found this Product!");
-									utils
+									await utils
 										.facebookAPI
 										.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, "หาไม่เจอหงะ!!!")
 								} else {
 									console.log(product);
 									//response with the matched image
-									utils
-									.facebookAPI
-									.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, "เจอล๊าวววว!!!")
-									utils
+									await utils
+										.facebookAPI
+										.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, "เจอล๊าวววว!!!")
+									await utils
 										.facebookAPI
 										.sendImage(msg.sender.id, config.FB_PAGE_TOKEN, product.matchedImage)
 
@@ -112,7 +119,7 @@ or return null if not found
 							}
 						});
 				}
-			});
+			);
 	})
 
 }
