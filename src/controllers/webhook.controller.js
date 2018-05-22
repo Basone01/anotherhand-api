@@ -63,22 +63,23 @@ const storeConversation = async (messageEntry) => {
 };
 
 async function catchImageAttachment(messageEntry) {
+	try {
 
-	messageEntry.forEach(async messageObject => {
-		const { messaging, id } = messageObject;
-		await utils
-			.helper
-			.asyncForEach(messaging, async (msg) => {
-				//catch only user message
-				console.log("ECHO",msg.message.is_echo);
-				if (msg.message.is_echo||msg.message.attachments===undefined) {
-					return
-				}
-				
+
+		messageEntry.forEach(async messageObject => {
+			const { messaging, id } = messageObject;
+			await utils
+				.helper
+				.asyncForEach(messaging, async (msg) => {
+					//ignore page's and plain message
+					if (('is_echo' in msg.message) || msg.message.attachments === undefined) {
+						return
+					}
+
 					//find all products 
 					const products = await ProductModel.find({})
 					//tell the customer I'm finding
-					utils
+					await utils
 						.facebookAPI
 						.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, "หาแปป...")
 					//attachment always come in array
@@ -88,7 +89,6 @@ async function catchImageAttachment(messageEntry) {
 							//catch if it is image
 							if (attachment.type === 'image') {
 								console.log('I got an Image');
-								// console.log(attachment.payload.url);
 
 								/*
 								Call an image search here
@@ -119,9 +119,11 @@ async function catchImageAttachment(messageEntry) {
 							}
 						});
 				}
-			);
-	})
+				);
+		})
+	} catch (error) {
 
+	}
 }
 
 module.exports = {
