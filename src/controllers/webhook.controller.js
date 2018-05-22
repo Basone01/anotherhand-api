@@ -4,7 +4,7 @@ const utils = require('../utils');
 const mockupProductsArray = require('../utils/sampleProducts.json');
 const ProductModel = require('../models/product');
 
-function verifyWebhookAPI (req, res, next) {
+function verifyWebhookAPI(req, res, next) {
 	if (
 		req.query['hub.mode'] === 'subscribe' &&
 		req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN
@@ -17,7 +17,7 @@ function verifyWebhookAPI (req, res, next) {
 	}
 }
 
-async function handleFacebookMessage (req, res, next) {
+async function handleFacebookMessage(req, res, next) {
 	try {
 		var FacebookMessages = req.body.entry;
 		await storeConversation(FacebookMessages);
@@ -31,9 +31,7 @@ async function handleFacebookMessage (req, res, next) {
 const storeConversation = async (messageEntry) => {
 	try {
 		messageEntry.forEach(async (message) => {
-			console.log('==================================');
-			console.log(JSON.stringify(message, null, 3));
-			console.log('==================================');
+
 
 			const { messaging, id, time, ...rest } = message;
 			await utils.helper.asyncForEach(messaging, async (msg) => {
@@ -61,20 +59,24 @@ const storeConversation = async (messageEntry) => {
 	}
 };
 
-async function catchImageAttachment (messageEntry) {
+async function catchImageAttachment(messageEntry) {
 	try {
-		
+
 		messageEntry.forEach(async (messageObject) => {
 			const { messaging, id } = messageObject;
 			await utils.helper.asyncForEach(messaging, async (msg) => {
 				//ignore page's and plain message
+				if (!('message' in msg)) {
+					return
+				}
+				if ('is_echo' in msg.message || 
+					msg.message.attachments === undefined || 
+					msg.message.attachments[0].type !== 'image') {
+						return;
+				}
 				console.log("==================")
 				console.log(msg.message)
 				console.log("==================")
-				if ('is_echo' in msg.message || msg.message.attachments === undefined) {
-					return;
-				}
-
 				//find all products
 				const products = await ProductModel.find({});
 				//tell the customer I'm finding
@@ -116,22 +118,39 @@ async function catchImageAttachment (messageEntry) {
 								config.FB_PAGE_TOKEN,
 								'เจอล๊าวววว!!!\nพิเลือกๆๆเลย...'
 							);
-							await utils.facebookAPI.sendImage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								product.matchedImage
-							);
+
 							await utils.facebookAPI.sendMessage(
 								msg.sender.id,
 								config.FB_PAGE_TOKEN,
 								product.matchedProduct.name
 							);
+
+							await utils.facebookAPI.sendImage(
+								msg.sender.id,
+								config.FB_PAGE_TOKEN,
+								product.matchedImage
+							);
+							
+							const remainingSize = `ตอนนี้เหลือไซส์\n` +
+								product.matchedProduct.sizes
+								.filter((item) => item.stock > 0)
+								.map(item => `${item.size}${product.matchedProduct.size_type}`)
+								.join(", ") 
+								+ ` นิหื๊ออออ~` 
+							await utils.facebookAPI.sendMessage(
+								msg.sender.id,
+								config.FB_PAGE_TOKEN,
+								remainingSize
+							);
+							
 						}
 					}
 				});
 			});
 		});
-	} catch (error) {}
+	} catch (error) {
+		throw error
+	 }
 }
 
 module.exports = {
