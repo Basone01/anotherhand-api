@@ -9,17 +9,17 @@ services:
       - ./src:/app/src
     ports:
       - 80:80
-    links:
-      - mongodb
-    depends_on:
-      - mongodb
-  mongodb:
-    container_name: anotherhand-db
-    image: mongo
-    volumes:
-      - ah-mongodb-vol:/data/db
-    ports:
-      - 27017:27017
+    # links:
+      # - mongodb
+#     depends_on:
+#       - mongodb
+#   mongodb:
+#     container_name: anotherhand-db
+#     image: mongo
+#     volumes:
+#       - ah-mongodb-vol:/data/db
+#     ports:
+#       - 27017:27017
 
-volumes:
-  ah-mongodb-vol:
+# volumes:
+#   ah-mongodb-vol:
