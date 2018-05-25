@@ -5,10 +5,7 @@ const mockupProductsArray = require('../utils/sampleProducts.json');
 const ProductModel = require('../models/product');
 
 function verifyWebhookAPI(req, res, next) {
-	if (
-		req.query['hub.mode'] === 'subscribe' &&
-		req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN
-	) {
+	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN) {
 		console.log('Validating webhook');
 		return res.status(200).send(req.query['hub.challenge']);
 	} else {
@@ -20,7 +17,7 @@ function verifyWebhookAPI(req, res, next) {
 async function handleFacebookMessage(req, res, next) {
 	try {
 		var FacebookMessages = req.body.entry;
-		await storeConversation(FacebookMessages);
+		// await storeConversation(FacebookMessages);
 		await catchImageAttachment(FacebookMessages);
 		return res.sendStatus(200);
 	} catch (error) {
@@ -28,11 +25,11 @@ async function handleFacebookMessage(req, res, next) {
 	}
 }
 
+//end of route function
+
 const storeConversation = async (messageEntry) => {
 	try {
 		messageEntry.forEach(async (message) => {
-
-
 			const { messaging, id, time, ...rest } = message;
 			await utils.helper.asyncForEach(messaging, async (msg) => {
 				await ConversationModel.update(
@@ -61,30 +58,27 @@ const storeConversation = async (messageEntry) => {
 
 async function catchImageAttachment(messageEntry) {
 	try {
-
 		messageEntry.forEach(async (messageObject) => {
 			const { messaging, id } = messageObject;
 			await utils.helper.asyncForEach(messaging, async (msg) => {
 				//ignore page's and plain message
 				if (!('message' in msg)) {
-					return
+					return;
 				}
-				if ('is_echo' in msg.message || 
-					msg.message.attachments === undefined || 
-					msg.message.attachments[0].type !== 'image') {
-						return;
+				if (
+					'is_echo' in msg.message ||
+					msg.message.attachments === undefined ||
+					msg.message.attachments[0].type !== 'image'
+				) {
+					return;
 				}
-				console.log("==================")
-				console.log(msg.message)
-				console.log("==================")
+				console.log('==================');
+				console.log(msg.message);
+				console.log('==================');
 				//find all products
 				const products = await ProductModel.find({});
 				//tell the customer I'm finding
-				await utils.facebookAPI.sendMessage(
-					msg.sender.id,
-					config.FB_PAGE_TOKEN,
-					'หาแปปเอ่าะ...'
-				);
+				await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
 				//attachment always come in array
 				await utils.helper.asyncForEach(msg.message.attachments, async (attachment) => {
 					//catch if it is image
@@ -97,17 +91,10 @@ async function catchImageAttachment(messageEntry) {
 								and will return object contain matchedProduct(object) and matchedImage(path)
 								or return null if not found
 								*/
-						const product = await utils.image.findMatchedProduct(
-							attachment.payload.url,
-							products
-						);
+						const product = await utils.image.findMatchedProduct(attachment.payload.url, products);
 						if (!product) {
 							console.log('Not Found this Product!');
-							await utils.facebookAPI.sendMessage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								'หาไม่เจอหงะ!!!'
-							);
+							await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, 'หาไม่เจอหงะ!!!');
 						} else {
 							console.log('========================================');
 							console.log(product);
@@ -130,27 +117,36 @@ async function catchImageAttachment(messageEntry) {
 								config.FB_PAGE_TOKEN,
 								product.matchedImage
 							);
-							
-							const remainingSize = `ตอนนี้เหลือไซส์\n` +
-								product.matchedProduct.sizes
-								.filter((item) => item.stock > 0)
-								.map(item => `${item.size}${product.matchedProduct.size_type}`)
-								.join(", ") 
-								+ ` นิหื๊ออออ~` 
-							await utils.facebookAPI.sendMessage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								remainingSize
-							);
-							
+							if (product.matchedProduct.sizes.length > 0) {
+								const remainingSize =
+									`ตอนนี้เหลือไซส์\n` +
+									product.matchedProduct.sizes
+										.filter((size) => size.stock > 0)
+										.map((size) => `${size.size}${product.matchedProduct.size_type}`)
+										.join(', ') +
+									` นิหื๊ออออ~`;
+
+								await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, remainingSize);
+							}else{
+								let remaining =''
+								if (product.matchedProduct.stock>0) {
+									remaining = `ตอนนี้เหลืออยู่ ${product.matchedProduct.stock} อันนิหื๊ออออ~`;
+								}else{
+									remaining = `แต่ตอนนี้หมดล๊าวว~ พิมะต้องเลือกๆ`;
+								}
+								
+									
+
+								await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, remaining);
+							}
 						}
 					}
 				});
 			});
 		});
 	} catch (error) {
-		throw error
-	 }
+		throw error;
+	}
 }
 
 module.exports = {
