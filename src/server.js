@@ -20,10 +20,14 @@ app.use('public',express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public/client')));
 
 app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public/index.html'));
+	res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
 
 applyRoutes(app);
+
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname, 'public/client/index.html'));
+});
 
 app.use((err, req, res, next) => {
 	console.error(err);
