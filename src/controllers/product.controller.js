@@ -51,27 +51,25 @@ async function createProduct(req, res, next) {
 						}
 					})
 				);
-			//finished preparing data, now add it to database
-			const newProduct = await ProductModel.create(product);
-			//add refs to shop
-			const shopResult = await ShopModel.update(
-				{ _id: newProduct.shop_id },
-				{
-					$push: {
-						products: newProduct._id
+				//finished preparing data, now add it to database
+				const newProduct = await ProductModel.create(product);
+				//add refs to shop
+				const shopResult = await ShopModel.update(
+					{ _id: newProduct.shop_id },
+					{
+						$push: {
+							products: newProduct._id
+						}
 					}
-				}
-			);
-			//send the result back
-			return res.json(newProduct.toJSON({ virtuals: true }));
-		}
-	});
-
+				);
+				//send the result back
+				return res.json(newProduct.toJSON({ virtuals: true }));
+			}
+		});
 	} catch (error) {
 		console.log('OUTER', error);
 		return next(error);
 	}
-
 }
 
 async function getAllProducts(req, res, next) {

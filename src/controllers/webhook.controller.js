@@ -61,6 +61,7 @@ async function catchImageAttachment(messageEntry) {
 		messageEntry.forEach(async (messageObject) => {
 			const { messaging, id } = messageObject;
 			await utils.helper.asyncForEach(messaging, async (msg) => {
+				const customerFbId = msg.sender.id;
 				//ignore page's and plain message
 				if (!('message' in msg)) {
 					return;
@@ -76,70 +77,29 @@ async function catchImageAttachment(messageEntry) {
 				console.log(msg.message);
 				console.log('==================');
 				//find all products
-				const products = await ProductModel.find({});
+				const productsFromDB = await ProductModel.find({});
 				//tell the customer I'm finding
-				await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
+				await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
 				//attachment always come in array
-				await utils.helper.asyncForEach(msg.message.attachments, async (attachment) => {
+				await utils.helper.asyncForEach(msg.message.attachments, async (attachment, index, self) => {
 					//catch if it is image
 					if (attachment.type === 'image') {
 						console.log('I got an Image');
-
+						const screenshotImageUrl = attachment.payload.url;
+						const screenshotImage = await utils.image.downloadImageToBuffer(attachment.payload.url);
 						/*
-								Call an image search here
-								findMatchedProduct accept image url and products from database to compare
-								and will return object contain matchedProduct(object) and matchedImage(path)
-								or return null if not found
-								*/
-						const product = await utils.image.findMatchedProduct(attachment.payload.url, products);
-						if (!product) {
-							console.log('Not Found this Product!');
-							await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, 'หาไม่เจอหงะ!!!');
-						} else {
-							console.log('========================================');
-							console.log(product);
-							console.log('========================================');
-							//response with the matched image
-							await utils.facebookAPI.sendMessage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								'เจอล๊าวววว!!!\nพิเลือกๆๆเลย...'
-							);
-
-							await utils.facebookAPI.sendMessage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								product.matchedProduct.name
-							);
-
-							await utils.facebookAPI.sendImage(
-								msg.sender.id,
-								config.FB_PAGE_TOKEN,
-								product.matchedImage
-							);
-							if (product.matchedProduct.sizes.length > 0) {
-								const remainingSize =
-									`ตอนนี้เหลือไซส์\n` +
-									product.matchedProduct.sizes
-										.filter((size) => size.stock > 0)
-										.map((size) => `${size.size}${product.matchedProduct.size_type}`)
-										.join(', ') +
-									` นิหื๊ออออ~`;
-
-								await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, remainingSize);
-							}else{
-								let remaining =''
-								if (product.matchedProduct.stock>0) {
-									remaining = `ตอนนี้เหลืออยู่ ${product.matchedProduct.stock} อันนิหื๊ออออ~`;
-								}else{
-									remaining = `แต่ตอนนี้หมดล๊าวว~ พิมะต้องเลือกๆ`;
-								}
-								
-									
-
-								await utils.facebookAPI.sendMessage(msg.sender.id, config.FB_PAGE_TOKEN, remaining);
-							}
-						}
+							Call an image search here
+							findMatchedProduct accept image url and products from database to compare
+							and will return object contain matchedProduct(object) and matchedImage(path)
+							or return null if not found
+						*/
+						findProductFromImageAndAnswerToCustomer(
+							screenshotImage,
+							productsFromDB,
+							customerFbId,
+							index,
+							self.length
+						);
 					}
 				});
 			});
@@ -152,4 +112,71 @@ async function catchImageAttachment(messageEntry) {
 module.exports = {
 	verifyWebhookAPI,
 	handleFacebookMessage
+};
+
+//start finding product from image
+const findProductFromImageAndAnswerToCustomer = async (
+	screenshotImage,
+	productsFromDB,
+	customerFbId,
+	index,
+	length
+) => {
+	const matchedResult = await utils.image.findMatchedProduct(screenshotImage, productsFromDB);
+	const answerPrefix = length > 1 ? `รูป${!index ? 'แรก' : `ที่ ${index + 1}`}:` : '';
+	if (!matchedResult) {
+		console.log('Not Found this Product!');
+		await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}หาไม่เจอหงะ!!!`);
+	} else {
+		console.log('========================================');
+		console.log(matchedResult);
+		console.log('========================================');
+		const { matchedProduct, matchedImage } = matchedResult;
+		//response with the matched image
+		await utils.facebookAPI.sendMessage(
+			customerFbId,
+			config.FB_PAGE_TOKEN,
+			`${answerPrefix}เจอล๊าวววว!!!\nพิเลือกๆๆเลย...`
+		);
+
+		await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, answerPrefix + matchedProduct.name);
+
+		await utils.facebookAPI.sendImage(customerFbId, config.FB_PAGE_TOKEN, matchedImage);
+
+		let answer = getRemainingStockAnswerFromMatchedProduct(matchedProduct);
+
+		await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, answerPrefix + answer);
+	}
+};
+
+//Get Answer about remaining stock
+const getCountFromSizeArray = (sizeArray) => {
+	return sizeArray.reduce((count, size) => {
+		return count + size.stock;
+	}, 0);
+};
+const getSizeListStringFromSizes = (sizes, size_type) => {
+	return sizes.filter((size) => size.stock > 0).map((size) => `${size.size}${size_type}`).join(', ');
+};
+
+const getRemainingStockAnswerFromMatchedProduct = (matchedProduct) => {
+	const { sizes, size_type, stock } = matchedProduct;
+	let answer = '';
+
+	if (sizes.length > 0) {
+		const allSizeStock = getCountFromSizeArray(sizes);
+		if (allSizeStock > 0) {
+			const sizeList = getSizeListStringFromSizes(sizes, size_type);
+			answer = `ตอนนี้เหลือไซส์\n${sizeList} นิหื๊ออออ~`;
+		} else {
+			answer = `แต่ตอนนี้หมดล๊าวว~ พิมะต้องเลือกๆ`;
+		}
+	} else {
+		if (stock > 0) {
+			answer = `ตอนนี้เหลืออยู่ ${stock} อันนิหื๊ออออ~`;
+		} else {
+			answer = `แต่ตอนนี้หมดล๊าวว~ พิมะต้องเลือกๆ`;
+		}
+	}
+	return answer;
 };
