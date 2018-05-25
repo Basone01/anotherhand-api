@@ -52,16 +52,11 @@ async function downloadImageToBuffer(url) {
 	return data;
 }
 
-async function findMatchedProduct(screenshotUrl, productArray) {
+async function findMatchedProduct(loadedScreenshotBuffer, productArray) {
 	try {
-		const loadedScreenshot = await downloadImageToBuffer(screenshotUrl);
 		for (let i = 0; i < productArray.length; i++) {
-			// console.log("Matching with",productArray[i].name);
-			// console.log(productArray[i].images_full_path);
-
 			const images_full_path = productArray[i].images_path.map((image_path) => path.join(ROOT_DIR, image_path));
-			console.log(images_full_path)
-			const imgPath = await compareWithImgArray(loadedScreenshot, images_full_path);
+			const imgPath = await compareWithImgArray(loadedScreenshotBuffer, images_full_path);
 			if (imgPath) {
 				return { matchedProduct: productArray[i], matchedImage: imgPath };
 			}
