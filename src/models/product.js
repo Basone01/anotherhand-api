@@ -4,6 +4,7 @@ const { Schema, SchemaTypes } = mongoose;
 
 const sizeSchema = new Schema({
 	size: SchemaTypes.Mixed,
+	price: { type: Number, default: 0 },
 	stock: { type: Number, default: 0 },
 	sold: { type: Number, default: 0 }
 });
@@ -14,22 +15,19 @@ const productSchema = new Schema({
 	name: String,
 	price: { type: Number, default: 0 },
 	description: String,
+	stock: { type: Number, default: 0 },
 	images: {
-		type: [
-			String
-		],
+		type: [ String ],
 		required: true
 	},
-	size_type: { type: String, isRequire: true },
+	size_type: { type: String, default:'' },
 	date_created: { type: Date, default: Date.now() },
-	sizes: [sizeSchema],
-	tags: [String]
+	sizes: [ sizeSchema ],
+	tags: [ String ]
 });
 
-
-
-productSchema.virtual("images_full_path").get(function () {
-	return this.images.map(image => path.join(__dirname, `../public/images/${this.shop_id}/${this._id}/${image}`))
-})
+productSchema.virtual('images_path').get(function() {
+	return this.images.map((image) => `/public/images/${this.shop_id}/${this._id}/${image}`);
+});
 
 module.exports = mongoose.model('Product', productSchema);
