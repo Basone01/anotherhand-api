@@ -11,10 +11,14 @@ const db = require('./services/db');
 const applyRoutes = require('./routes');
 
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '20mb'}));
+app.use(bodyParser.urlencoded({
+    extended: true 
+}));
 app.use(logger('dev'));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('images',express.static(path.join(__dirname, 'public/images')));
+app.use('static',express.static(path.join(__dirname, 'public/static')));
+app.use('public',express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, 'public/index.html'));

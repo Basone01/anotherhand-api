@@ -1,17 +1,14 @@
 const axios = require('axios').default;
 const cv = require('opencv4nodejs');
-const helper = require('./helper');
+const { ROOT_DIR } = require('../config');
 const path = require('path');
+const helper = require('./helper');
 const mockupProductsArray = require('./sampleProducts.json');
 const compareImage = async (image, templateImage) => {
 	// this function parameter can accept path-string and buffer with different read
 	// method
-	let userCapturedImage = typeof image === 'string'
-		? cv.imread(image)
-		: cv.imdecode(image);
-	let templateFromDB = typeof templateImage === 'string'
-		? cv.imread(templateImage)
-		: cv.imdecode(templateImage);
+	let userCapturedImage = typeof image === 'string' ? cv.imread(image) : cv.imdecode(image);
+	let templateFromDB = typeof templateImage === 'string' ? cv.imread(templateImage) : cv.imdecode(templateImage);
 
 	//resize to max 512 for faster compare and scale the larger one to same width
 	userCapturedImage = userCapturedImage.resizeToMax(512);
@@ -37,13 +34,12 @@ async function compareWithImgArray(loadedScreenshot, productImgArray) {
 			// console.log(`at image ${i+1}`);
 			const matchedRate = await compareImage(loadedScreenshot, productImgArray[i]);
 			console.log(`Rate : ${matchedRate}`);
-			
+
 			if (matchedRate > 0.8) {
 				return productImgArray[i];
 			}
 		}
 		// console.log("===================================");
-		
 	} catch (error) {
 		throw error;
 	}
@@ -62,19 +58,19 @@ async function findMatchedProduct(screenshotUrl, productArray) {
 		for (let i = 0; i < productArray.length; i++) {
 			// console.log("Matching with",productArray[i].name);
 			// console.log(productArray[i].images_full_path);
-			
-			const imgPath = await compareWithImgArray(loadedScreenshot, productArray[i].images_full_path)
-			
+
+			const images_full_path = productArray[i].images_path.map((image_path) => path.join(ROOT_DIR, image_path));
+			console.log(images_full_path)
+			const imgPath = await compareWithImgArray(loadedScreenshot, images_full_path);
 			if (imgPath) {
 				return { matchedProduct: productArray[i], matchedImage: imgPath };
 			}
 		}
 		return null;
 	} catch (error) {
-		throw error
+		throw error;
 	}
 }
-
 
 module.exports = {
 	downloadImageToBuffer,

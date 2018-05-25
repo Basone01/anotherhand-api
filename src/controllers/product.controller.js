@@ -1,4 +1,5 @@
 const config = require('../config');
+const { helper } = require('../utils/');
 const ProductModel = require('../models/product');
 const ShopModel = require('../models/shop');
 const Types = require('mongoose').Types;
@@ -6,17 +7,18 @@ const path = require('path');
 const sharp = require('sharp');
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+const base64decoder = require('../utils/base64decoder');
 //tell sharp don't lock the original file to make sure it can be delete
-sharp.cache(false);
+sharp.cache(true);
 
 async function createProduct(req, res, next) {
 	//bind shop id if in development
-	let product =
-		config.DEV_MODE ? {
-			...req.body,
-			shop_id: config.DEV_SHOP_ID
-		} :
-			req.body;
+	let product = config.DEV_MODE
+		? {
+				...req.body,
+				shop_id: config.DEV_SHOP_ID
+			}
+		: req.body;
 
 	const { shop_id, product_id } = product;
 
@@ -30,64 +32,53 @@ async function createProduct(req, res, next) {
 		product._id = new Types.ObjectId();
 		const folder = path.join(__dirname, '..', `public/images/${shop_id}/${product._id}`);
 		//create folder
-		mkdirp(folder, (err, created) => {
+		mkdirp(folder, async (err, created) => {
 			if (err) {
 				throw err;
-			}
-		});
-
-		product.images = await Promise.all(
-			req.files.map(async (file) => {
-				try {
-					//resize and encode to jpeg and store in the folder that has created before
-					await sharp(file.path)
-						.resize(1024, 1024)
-						.max()
-						.jpeg()
-						.toFile(path.join(folder, file.filename + '.jpg'));
-					//remove original file
-					fs.unlink(file.path, (err) => {
-						if (err) {
-							throw new Error(err.message);
+			} else {
+				product.images = await Promise.all(
+					req.body.images.map(async (image, index) => {
+						try {
+							//resize and encode to jpeg and store in the folder that has created before
+							const { data } = base64decoder(image);
+							const filename = `${index}-${Date.now()}.jpg`;
+							console.log(filename);
+							await sharp(data).resize(1024, 1024).max().jpeg().toFile(path.join(folder, filename));
+							// return file name to array
+							return filename;
+						} catch (error) {
+							throw error;
 						}
-					});
-					// return file name to array
-					return file.filename + '.jpg';
-				} catch (error) {
-					console.log(error.message);
+					})
+				);
+			//finished preparing data, now add it to database
+			const newProduct = await ProductModel.create(product);
+			//add refs to shop
+			const shopResult = await ShopModel.update(
+				{ _id: newProduct.shop_id },
+				{
+					$push: {
+						products: newProduct._id
+					}
 				}
-			})
-		);
-		product.sizes = JSON.parse(product.sizes)
-		product.tags = JSON.parse(product.tags)
-		// console.log(JSON.stringify(product,null,3))
-		//finished prepare data, then add it to database
-		const newProduct = await ProductModel.create(product);
-		console.log(newProduct.images_full_path);
-		
-		//add refs to shop
-		const shopResult = await ShopModel.update(
-			{ _id: newProduct.shop_id },
-			{
-				$push: {
-					products: newProduct._id
-				}
-			}
-		);
-		//send the result back
-		return res.json(newProduct);
+			);
+			//send the result back
+			return res.json(newProduct.toJSON({ virtuals: true }));
+		}
+	});
+
 	} catch (error) {
+		console.log('OUTER', error);
 		return next(error);
 	}
+
 }
 
 async function getAllProducts(req, res, next) {
-	const shop_detail =
-		config.DEV_MODE ? { shop_id: config.DEV_SHOP_ID } :
-			{};
+	const shop_detail = config.DEV_MODE ? { shop_id: config.DEV_SHOP_ID } : {};
 	try {
 		const products = await ProductModel.find(shop_detail);
-		return res.json(products);
+		return res.json(products.map((product) => product.toObject({ virtuals: true })));
 	} catch (error) {
 		return next(error);
 	}

@@ -1,13 +1,8 @@
-const router = require("express").Router();
-const productController = require("../controllers/product.controller");
-const Uploader = require("../services/uploader");
+const router = require('express').Router();
+const productController = require('../controllers/product.controller');
 
-router.get("/products", productController.getAllProducts);
-router.get("/product/:id", productController.getProductById);
-router.post(
-	"/product",
-	Uploader.array("images"),
-	productController.createProduct
-);
+router.get('/products', productController.getAllProducts);
+router.get('/product/:id', productController.getProductById);
+router.post('/product', productController.createProduct);
 
 module.exports = router;
