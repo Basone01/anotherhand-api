@@ -33,13 +33,12 @@ async function compareWithImgArray(loadedScreenshot, productImgArray) {
 		for (let i = 0; i < productImgArray.length; i++) {
 			// console.log(`at image ${i+1}`);
 			const matchedRate = await compareImage(loadedScreenshot, productImgArray[i]);
-			console.log(`Rate : ${matchedRate}`);
+			console.log(`Matched Rate : ${matchedRate}`);
 
 			if (matchedRate > 0.8) {
 				return productImgArray[i];
 			}
 		}
-		// console.log("===================================");
 	} catch (error) {
 		throw error;
 	}
@@ -55,8 +54,14 @@ async function downloadImageToBuffer(url) {
 async function findMatchedProduct(loadedScreenshotBuffer, productArray) {
 	try {
 		for (let i = 0; i < productArray.length; i++) {
+			console.log('================ Comparing With ' + productArray[i].name + ' ===================\n');
+
 			const images_full_path = productArray[i].images_path.map((image_path) => path.join(ROOT_DIR, image_path));
 			const imgPath = await compareWithImgArray(loadedScreenshotBuffer, images_full_path);
+
+			console.log()
+
+
 			if (imgPath) {
 				return { matchedProduct: productArray[i], matchedImage: imgPath };
 			}
