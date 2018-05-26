@@ -16,8 +16,9 @@ app.use(bodyParser.urlencoded({
     extended: true 
 }));
 app.use(logger('dev'));
-app.use('public',express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'public/client')));
+app.use('/public',express.static(path.join(__dirname, 'public')));
+app.use('/',express.static(path.join(__dirname, 'public/client/')));
+// app.use(express.static(path.join(__dirname, 'public/client')));
 
 app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, 'public/client/index.html'));
