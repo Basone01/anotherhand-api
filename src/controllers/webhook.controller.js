@@ -34,8 +34,8 @@ const storeConversation = async (messageEntry) => {
 			await utils.helper.asyncForEach(messaging, async (msg) => {
 				await ConversationModel.update(
 					{
-						fb_conversation_id: id,
-						shop_id: config.DEV_SHOP_ID
+						shop_id: config.DEV_SHOP_ID,
+						customer_id: id === mag.sender.id ? mag.sender.id : id
 					},
 					{
 						$push: {
@@ -59,27 +59,24 @@ const storeConversation = async (messageEntry) => {
 async function catchImageAttachment(messageEntry) {
 	try {
 		messageEntry.forEach(async (messageObject) => {
-			const { messaging, id } = messageObject;
-			await utils.helper.asyncForEach(messaging, async (msg) => {
-				const customerFbId = msg.sender.id;
+			const { messaging, id: shop_id } = messageObject;
+			//filter and get only customer messages
+			const customerMessages = messaging.filter((msg) => msg.sender.id !== shop_id);
+			//masages always come in array form
+			await utils.helper.asyncForEach(customerMessages, async (msg) => {
+				const customer_id = msg.sender.id;
 				//ignore page's and plain message
 				if (!('message' in msg)) {
+					console.log('=========NO MSG=========');
+					console.log(JSON.stringify(msg, null, 3));
+					console.log('==================');
 					return;
 				}
-				if (
-					'is_echo' in msg.message ||
-					msg.message.attachments === undefined ||
-					msg.message.attachments[0].type !== 'image'
-				) {
-					return;
-				}
-				console.log('==================');
-				console.log(msg.message);
-				console.log('==================');
+
 				//find all products
 				const productsFromDB = await ProductModel.find({});
 				//tell the customer I'm finding
-				await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
+				await utils.facebookAPI.sendMessage(customer_id, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
 				//attachment always come in array
 				await utils.helper.asyncForEach(msg.message.attachments, async (attachment, index, self) => {
 					//catch if it is image
@@ -96,7 +93,7 @@ async function catchImageAttachment(messageEntry) {
 						findProductFromImageAndAnswerToCustomer(
 							screenshotImage,
 							productsFromDB,
-							customerFbId,
+							customer_id,
 							index,
 							self.length
 						);
@@ -128,9 +125,9 @@ const findProductFromImageAndAnswerToCustomer = async (
 		console.log('Not Found this Product!');
 		await utils.facebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}หาไม่เจอหงะ!!!`);
 	} else {
-		console.log('========================================');
-		console.log(matchedResult);
-		console.log('========================================');
+		// console.log('========================================');
+		// console.log(matchedResult);
+		// console.log('========================================');
 		const { matchedProduct, matchedImage } = matchedResult;
 		//response with the matched image
 		await utils.facebookAPI.sendMessage(
@@ -167,7 +164,7 @@ const getRemainingStockAnswerFromMatchedProduct = (matchedProduct) => {
 		const allSizeStock = getCountFromSizeArray(sizes);
 		if (allSizeStock > 0) {
 			const sizeList = getSizeListStringFromSizes(sizes, size_type);
-			answer = `ตอนนี้เหลือไซส์\n${sizeList} นิหื๊ออออ~`;
+			answer = `ตอนนี้เหลือ\n${sizeList} นิหื๊ออออ~`;
 		} else {
 			answer = `แต่ตอนนี้หมดล๊าวว~ พิมะต้องเลือกๆ`;
 		}
