@@ -88,7 +88,7 @@ async function getProductById(req, res, next) {
 		if (!product) {
 			throw new Error('not found');
 		}
-		return res.json(product);
+		return res.json(product.toJSON({ virtuals: true }));
 	} catch (error) {
 		return next(error);
 	}
