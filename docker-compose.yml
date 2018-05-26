@@ -3,6 +3,7 @@ services:
   app:
     container_name: anotherhand-app
     build: .
+    image: basone01/anotherhand-app
     env_file:
       - ./.env
     volumes:
