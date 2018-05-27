@@ -21,18 +21,18 @@ app.use('/',express.static(path.join(__dirname, 'public/client/')));
 // app.use(express.static(path.join(__dirname, 'public/client')));
 
 app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public/client/index.html'));
+	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
 });
 
 applyRoutes(app);
 
-app.get('*', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public/client/index.html'));
-});
+// app.get('*', (req, res) => {
+// 	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
+// });
 
 app.use((err, req, res, next) => {
 	console.error(err);
-	res.status(500).send(err.message);
+	return res.status(500).send(err.message);
 });
 
 app.listen(port, () => {

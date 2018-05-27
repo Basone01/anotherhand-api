@@ -1,8 +1,12 @@
-const helperFunctions = require('./helper');
-const imageFunctions = require('./image');
-const facebookAPI = require('./facebookAPI');
+async function asyncForEach(arr, cb) {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    const res = await cb(arr[i], i, arr);
+    result.push(res);
+  }
+  return result;
+}
+
 module.exports = {
-	helper:helperFunctions,
-	image:imageFunctions,
-	facebookAPI
+  asyncForEach
 };
