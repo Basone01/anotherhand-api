@@ -11,7 +11,6 @@ const base64toBuffer = require("../utils/base64decoder");
 const rimraf = require("rimraf");
 //tell sharp don't lock the original file to make sure it can be delete
 sharp.cache(true);
-
 async function createProduct(req, res, next) {
   //bind shop id if in development
   let product = config.DEV_MODE
@@ -128,8 +127,8 @@ async function updateProduct(req, res, next) {
   const { _id } = req.body;
   if (!_id) next(new Error("no _id specified"));
   try {
-    let updatingProduct = req.body
-    console.log(updatingProduct)
+    let updatingProduct = req.body;
+    console.log(updatingProduct);
     const oldImage = updatingProduct.images.filter(
       image => !image.includes("data:")
     );
@@ -179,6 +178,7 @@ async function storeProductImagesAndGetFilename(base64Images, dest) {
             .max()
             .jpeg()
             .toFile(path.join(dest, filename));
+
           // return file name to array
           return filename;
         } catch (error) {

@@ -3,11 +3,11 @@ const { Schema, SchemaTypes } = mongoose;
 
 const orderSchema = new Schema({
 	address: String,
-	totalPrice: Number,
-	orderId: String,
-	customerId: String,
-	shopId: String,
-	product: { type: SchemaTypes.ObjectId, ref: "Product" },
+	total_price: Number,
+	order_id: String,
+	customer_id: String,
+	shop_id: String,
+	product_id: { type: SchemaTypes.ObjectId, ref: "Product" },
 	size: SchemaTypes.Mixed
 });
 

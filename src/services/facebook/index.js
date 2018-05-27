@@ -2,7 +2,7 @@ const FormData = require("form-data");
 const fs = require("fs");
 const axios = require("axios");
 const createTemplateMessage = require("./templateMessage/fabebookGenericTemplate");
-
+const {ROOT_DIR} = require('../../config');
 function getAttachmentId(filepathToUpload, token) {
   const formData = new FormData();
   formData.append(
@@ -16,9 +16,8 @@ function getAttachmentId(filepathToUpload, token) {
       }
     })
   );
-  const file = fs.createReadStream(filepathToUpload);
+  let file = fs.createReadStream(ROOT_DIR+filepathToUpload);
   formData.append("filedata", file);
-
   return axios
     .create({
       headers: formData.getHeaders()
@@ -27,7 +26,7 @@ function getAttachmentId(filepathToUpload, token) {
       `https://graph.facebook.com/v2.6/me/message_attachments?access_token=${token}`,
       formData
     )
-    .then(response => response.data);
+    .then(response => {console.log(response.data); return response.data});
 }
 
 async function sendProduct(customer_id, token, product) {

@@ -1,13 +1,11 @@
-const {HOST} = require('../../../config');
+const { HOST } = require("../../../config");
 const createProductMessage = ({ customer_id, product }) => {
   let { name, _id, shop_id, description, sizes, price, images_path } = product;
   images_path = !images_path
     ? [
         "http://vollrath.com/ClientCss/images/VollrathImages/No_Image_Available.jpg"
       ]
-    : images_path.map(
-        image_path => HOST + image_path
-      );
+    : images_path.map(image_path => HOST + image_path);
   const ProductTemplateMessage = {
     recipient: {
       id: customer_id
@@ -28,18 +26,18 @@ const createProductMessage = ({ customer_id, product }) => {
               buttons: [
                 {
                   type: `postback`,
-                  title: `เลือกแบบ/ไซส์`,
-                  payload: `{req:'getSizes',_id:${_id}}`
+                  title: `สั่งซื้อ`,
+                  payload: `{"req":"placeOrder","_id":"${_id}"}`
                 },
                 {
                   type: `postback`,
                   title: `ดูรูปเพิ่ม`,
-                  payload: `{req:'getImage',_id:${_id}}`
+                  payload: `{"req":"getImages","_id":"${_id}"}`
                 },
                 {
                   type: `postback`,
                   title: `รายละเอียด`,
-                  payload: `{req:'getDetails',_id:${_id}}`
+                  payload: `{"req":"getDetails","_id":"${_id}"}`
                 }
               ]
             }
@@ -48,8 +46,8 @@ const createProductMessage = ({ customer_id, product }) => {
       }
     }
   };
-  
-  console.log(JSON.stringify(ProductTemplateMessage,null,3))
+
+  console.log(JSON.stringify(ProductTemplateMessage, null, 3));
   return ProductTemplateMessage;
 };
 
