@@ -124,11 +124,46 @@ async function deleteProduct(req, res, next) {
   }
 }
 
+async function updateProduct(req, res, next) {
+  const { _id } = req.body;
+  if (!_id) next(new Error("no _id specified"));
+  try {
+    let updatingProduct = req.body
+    console.log(updatingProduct)
+    const oldImage = updatingProduct.images.filter(
+      image => !image.includes("data:")
+    );
+    const newImage = updatingProduct.images.filter(image =>
+      image.includes("data:")
+    );
+    const folder = path.join(
+      __dirname,
+      `../public/images/${updatingProduct.shop_id}/${updatingProduct._id}`
+    );
+    //storeNewImage
+    const storedImage = await storeProductImagesAndGetFilename(
+      newImage,
+      folder
+    );
+    updatingProduct.images = [...oldImage, ...storedImage];
+    let updatedProduct = await ProductModel.findByIdAndUpdate(_id, {
+      $set: {
+        ...updatingProduct
+      }
+    });
+    console.log(updatedProduct);
+    res.json({ success: true, data: updatedProduct });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getProductById,
   getAllProducts,
   createProduct,
-  deleteProduct
+  deleteProduct,
+  updateProduct
 };
 
 async function storeProductImagesAndGetFilename(base64Images, dest) {
