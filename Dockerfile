@@ -27,11 +27,11 @@ RUN ln -s /usr/lib/node_modules/npm/bin/npm-cli.js /usr/bin/npm \
   # install sharp
 RUN apk update && apk add -u --no-cache python make g++
 RUN apk add vips-dev fftw-dev --update-cache --repository https://dl-3.alpinelinux.org/alpine/edge/testing/
-WORKDIR /app
-COPY ./package.json /app
 RUN npm install -g npm@5.6.0
 RUN npm i -g nodemon
 RUN npm i -g yarn
+WORKDIR /app
+COPY ./package.json /app
 RUN yarn
 COPY . /app
 CMD ["nodemon","-L", "index.js"]
