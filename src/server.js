@@ -26,9 +26,9 @@ app.get('/', (req, res) => {
 
 applyRoutes(app);
 
-// app.get('*', (req, res) => {
-// 	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
-// });
+app.get('*', (req, res) => {
+	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
+});
 
 app.use((err, req, res, next) => {
 	console.error(err);
