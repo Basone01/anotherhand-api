@@ -14,7 +14,7 @@ const compareImage = async (image, templateImage) => {
       typeof templateImage === "string"
         ? cv.imread(templateImage)
         : cv.imdecode(templateImage);
-    console.log(userCapturedImage, templateFromDB);
+    // console.log(userCapturedImage, templateFromDB);
 
     //resize to max 512 for faster compare and scale the larger one to same width
     userCapturedImage = userCapturedImage.resizeToMax(512);

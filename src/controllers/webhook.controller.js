@@ -185,7 +185,7 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
     if (!product) {
       throw new Error("Product Not Found");
     } else {
-      if (product.size.length === 0) {
+      if (product.sizes.length === 0) {
         if (product.stock < 1) {
           return await services.FacebookAPI.sendMessage(
             customer_fb_id,
@@ -193,7 +193,7 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
             "ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋ออ~!!!"
           );
         } else {
-          if (product.size.reduce((stock, size) => stock + size.stock) < 1) {
+          if (product.sizes.reduce((stock, size) => stock + size.stock) < 1) {
             return await services.FacebookAPI.sendMessage(
               customer_fb_id,
               config.FB_PAGE_TOKEN,
