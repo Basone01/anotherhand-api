@@ -119,6 +119,13 @@ chownr@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.0.1.tgz#e2a75042a9551908bebd25b8523d5f9769d79181"
 
+cloudinary@^1.11.0:
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/cloudinary/-/cloudinary-1.11.0.tgz#3f6b21961d17859f271738f452427d9899591ff1"
+  dependencies:
+    lodash "^4.17.4"
+    q "^1.5.1"
+
 code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
@@ -450,7 +457,7 @@ lodash.get@4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.get/-/lodash.get-4.4.2.tgz#2d177f652fa31e939b4438d5341499dfa3825e99"
 
-lodash@^4.14.0:
+lodash@^4.14.0, lodash@^4.17.4:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
@@ -717,6 +724,10 @@ pump@^2.0.1:
   dependencies:
     end-of-stream "^1.1.0"
     once "^1.3.1"
+
+q@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/q/-/q-1.5.1.tgz#7e32f75b41381291d04611f1bf14109ac00651d7"
 
 qs@6.5.1:
   version "6.5.1"

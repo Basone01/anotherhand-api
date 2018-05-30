@@ -1,11 +1,6 @@
 const { HOST } = require("../../../config");
 const createProductMessage = ({ customer_id, product }) => {
-  let { name, _id, shop_id, description, sizes, price, images_path } = product;
-  images_path = !images_path
-    ? [
-        "http://vollrath.com/ClientCss/images/VollrathImages/No_Image_Available.jpg"
-      ]
-    : images_path.map(image_path => HOST + image_path);
+  let { name, _id, shop_id, description, sizes, price, images } = product;
   const ProductTemplateMessage = {
     recipient: {
       id: customer_id
@@ -18,7 +13,7 @@ const createProductMessage = ({ customer_id, product }) => {
           elements: [
             {
               title: name,
-              image_url: images_path[0],
+              image_url: images[0],
               subtitle: `
                 ราคา:${price}\n
                 รายละเอียด:${description}

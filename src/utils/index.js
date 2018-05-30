@@ -1,3 +1,4 @@
+const base64decoder = require('./base64decoder');
 async function asyncForEach(arr, cb) {
   let result = [];
   for (let i = 0; i < arr.length; i++) {
@@ -9,4 +10,5 @@ async function asyncForEach(arr, cb) {
 
 module.exports = {
   asyncForEach
+
 };

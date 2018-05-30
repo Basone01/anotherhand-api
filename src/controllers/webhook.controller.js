@@ -249,16 +249,15 @@ const handleMoreImage = async (customer_fb_id, shop_id, product_id) => {
   try {
     let product = await ProductModel.findById(product_id);
     product = product.toJSON({ virtuals: true });
-    console.log(product);
     if (!product) {
       throw new Error("Product Not Found");
     } else {
-      product.images_path.forEach(async path => {
+      product.images.forEach(async image => {
         try {
           await services.FacebookAPI.sendImage(
             customer_fb_id,
             config.FB_PAGE_TOKEN,
-            path
+            image
           );
         } catch (error) {
           throw error;
@@ -297,11 +296,11 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
           }`
         );
 
-        await services.FacebookAPI.sendImage(
-          customer_fb_id,
-          config.FB_PAGE_TOKEN,
-          product.images_path[0]
-        );
+        // await services.FacebookAPI.sendImage(
+        //   customer_fb_id,
+        //   config.FB_PAGE_TOKEN,
+        //   product.images[0]
+        // );
         await services.FacebookAPI.sendMessage(
           customer_fb_id,
           config.FB_PAGE_TOKEN,

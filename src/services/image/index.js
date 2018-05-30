@@ -1,20 +1,17 @@
 const axios = require("axios").default;
 const cv = require("opencv4nodejs");
-const { ROOT_DIR } = require("../../config");
+const {ROOT_DIR} = require("../../config");
 const path = require("path");
 const helper = require("../../utils/");
 const compareImage = async (image, templateImage) => {
   // this function parameter can accept path-string and buffer with different read
   // method
-  console.log(image, templateImage);
   try {
-    let userCapturedImage =
-      typeof image === "string" ? cv.imread(image) : cv.imdecode(image);
-    let templateFromDB =
-      typeof templateImage === "string"
-        ? cv.imread(templateImage)
-        : cv.imdecode(templateImage);
-    // console.log(userCapturedImage, templateFromDB);
+    let userCapturedImage = typeof image === "string" ? cv.imread(image) : cv.imdecode(image);
+    let templateFromDB = typeof templateImage === "string"
+      ? cv.imread(templateImage)
+      : cv.imdecode(templateImage);
+      // console.log(userCapturedImage, templateFromDB);
 
     //resize to max 512 for faster compare and scale the larger one to same width
     userCapturedImage = userCapturedImage.resizeToMax(512);
@@ -39,7 +36,7 @@ const compareImage = async (image, templateImage) => {
   } catch (error) {
     console.log(error.id);
     return null;
-    // throw error;
+  // throw error;
   }
 };
 
@@ -65,7 +62,9 @@ async function compareWithImgArray(loadedScreenshot, productImgArray) {
 }
 
 async function downloadImageToBuffer(url) {
-  const { data } = await axios.get(url, { responseType: "arraybuffer" });
+  const {data} = await axios.get(url, {
+    responseType: "arraybuffer"
+  });
   return data;
 }
 
@@ -74,22 +73,23 @@ async function findMatchedProduct(loadedScreenshotBuffer, productArray) {
     for (let i = 0; i < productArray.length; i++) {
       console.log(
         "================ Comparing With " +
-          productArray[i].name +
-          " ===================\n"
+        productArray[i].name +
+        " ===================\n"
       );
 
-      const images_full_path = productArray[i].images_path.map(image_path =>
-        path.join(ROOT_DIR, image_path)
-      );
+      const downloaded_images = await Promise.all(productArray[i].images.map(downloadImageToBuffer));
       const imgPath = await compareWithImgArray(
         loadedScreenshotBuffer,
-        images_full_path
+        downloaded_images
       );
 
       console.log();
 
       if (imgPath) {
-        return { matchedProduct: productArray[i], matchedImage: imgPath };
+        return {
+          matchedProduct: productArray[i],
+          matchedImage: imgPath
+        };
       }
     }
     return null;

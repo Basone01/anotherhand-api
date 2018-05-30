@@ -28,10 +28,4 @@ const productSchema = new Schema({
   tags: [String]
 });
 
-productSchema.virtual("images_path").get(function() {
-  return this.images.map(
-    image => `/public/images/${this.shop_id}/${this._id}/${image}`
-  );
-});
-
 module.exports = mongoose.model("Product", productSchema);
