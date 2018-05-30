@@ -1,4 +1,3 @@
-const FormData = require("form-data");
 const fs = require("fs");
 const axios = require("axios");
 const createTemplateMessage = require("./templateMessage/fabebookGenericTemplate");
