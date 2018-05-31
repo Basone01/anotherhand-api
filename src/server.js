@@ -19,13 +19,13 @@ app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
+	return res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 applyRoutes(app);
 
 app.get('*', (req, res) => {
-	return res.sendFile(path.join(__dirname, 'public/client/index.html'));
+	return res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.use((err, req, res, next) => {
