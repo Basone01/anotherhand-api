@@ -33,6 +33,7 @@ async function createProduct(req, res, next) {
 
     product.images = await Promise.all(product.images.map(uploadImage))
     console.log(product);
+    product._id=new Types.ObjectId();
     //finished preparing data, now add it to database
     const newProduct = await ProductModel.create(product);
     console.log(newProduct);

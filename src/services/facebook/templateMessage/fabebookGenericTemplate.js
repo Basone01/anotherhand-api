@@ -1,4 +1,3 @@
-const { HOST } = require("../../../config");
 const createProductMessage = ({ customer_id, product }) => {
   let { name, _id, shop_id, description, sizes, price, images } = product;
   const ProductTemplateMessage = {

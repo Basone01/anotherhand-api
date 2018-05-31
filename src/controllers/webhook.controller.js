@@ -137,6 +137,7 @@ async function catchImageAttachment(messageEntry) {
           config.FB_PAGE_TOKEN,
           "หาแปปเอ่าะ..."
         );
+        console.log("fsdgsfdgsdfgsdfg",productsFromDB)
         //attachment always come in array
         await utils.asyncForEach(
           msg.message.attachments,
@@ -369,6 +370,8 @@ const findProductFromImageAndAnswerToCustomer = async (
       config.FB_PAGE_TOKEN,
       answerPrefix + answer
     );
+    console.log(matchedProduct)
+    
     await services.FacebookAPI.sendProduct(
       customerFbId,
       config.FB_PAGE_TOKEN,
