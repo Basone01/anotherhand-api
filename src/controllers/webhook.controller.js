@@ -190,7 +190,7 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 			}
 
 			const order = new OrderModel({
-				product_id: product_id,
+				product: product_id,
 				customer_id: customer_fb_id,
 				shop_id,
 				total_price: product.price

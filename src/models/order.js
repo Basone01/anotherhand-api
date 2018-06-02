@@ -7,7 +7,7 @@ const orderSchema = new Schema({
 	order_id: String,
 	customer_id: String,
 	shop_id: String,
-	product_id: { type: SchemaTypes.ObjectId, ref: "Product" },
+	product: { type: SchemaTypes.ObjectId, ref: "Product" },
 	size: SchemaTypes.Mixed
 });
 

@@ -4,7 +4,14 @@ const OrderModel = require("../models/order");
 const Types = require("mongoose").Types;
 const path = require("path");
 
-
+async function createOrder (req, res, next) {
+	try {
+		const newOrder = await OrderModel.create(req.body);
+		return res.json(newOrder);
+	} catch (error) {
+		return next(error);
+	}
+}
 
 
 async function getAllOrders(req, res, next) {
@@ -12,7 +19,7 @@ async function getAllOrders(req, res, next) {
     shop_id: config.DEV_SHOP_ID
   } : {};
   try {
-    const orders = await PrderModel.find(shop_detail);
+    const orders = await OrderModel.find(shop_detail).populate("product");
     return res.json(orders);
   } catch (error) {
     return next(error);
@@ -59,10 +66,10 @@ async function deleteOrder(req, res, next) {
 
 
 module.exports = {
-  getProductById,
-  getAllProducts,
-  deleteProduct,
-
+  getOrderById,
+  getAllOrders,
+  deleteOrder,
+  createOrder
 };
 
 
