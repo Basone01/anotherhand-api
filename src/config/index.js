@@ -12,7 +12,8 @@ module.exports = {
   FB_PAGE_TOKEN,
   FB_WEBHOOK_TOKEN,
   DEV_MODE,
-  DEV_SHOP_ID: "1274274259365681",
+  DEV_SHOP_PAGE_ID: "1274274259365681",
+  DEV_SHOP_ID: "5aef68434619c318f8343d89",
   ROOT_DIR: path.join(__dirname, "../"),
   HOST
 };

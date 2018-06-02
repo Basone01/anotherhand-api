@@ -5,6 +5,7 @@ const services = require('../services');
 const mockupProductsArray = require('../utils/sampleProducts.json');
 const ProductModel = require('../models/product');
 const OrderModel = require('../models/order');
+const ShopModel = require('../models/shop');
 function verifyWebhookAPI(req, res, next) {
 	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN) {
 		console.log('Validating webhook');
@@ -189,10 +190,11 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 				}
 			}
 
+			const shop = await ShopModel.findOne({fb_page_id:shop_id})
 			const order = new OrderModel({
 				product: product_id,
 				customer_id: customer_fb_id,
-				shop_id,
+				shop:shop._id,
 				total_price: product.price
 			});
 			console.log(order);

@@ -1,13 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema, SchemaTypes } = mongoose;
 
 const shopModel = new Schema({
 	name: {
 		type: String
-	},
-	id: {
-		type: String,
-		required: true
 	},
 	create_date: {
 		type: Date,
@@ -16,10 +12,14 @@ const shopModel = new Schema({
 	fb_page_id: {
 		type: String,
 		required: true,
-		unique:true
+		unique: true
 	},
-	orders: [ { type: SchemaTypes.ObjectId, ref: "Order" } ],
-	products: [ { type: SchemaTypes.ObjectId, ref: "Product" } ]
+	fb_page_token: {
+		type: String,
+		required: true
+	},
+	orders: [ { type: SchemaTypes.ObjectId, ref: 'Order' } ],
+	products: [ { type: SchemaTypes.ObjectId, ref: 'Product' } ]
 });
 
-module.exports = mongoose.model("Shop", shopModel);
+module.exports = mongoose.model('Shop', shopModel);
