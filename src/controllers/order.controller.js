@@ -34,7 +34,7 @@ async function getAllOrders(req, res, next) {
 
 async function getOrderById(req, res, next) {
 	try {
-		const order = await OrderModel.findById(req.params.id);
+		const order = await OrderModel.findById(req.params.id).populate('product');
 		const shop = await ShopModel.findById(config.DEV_SHOP_ID);
 
 		if (!order) {
