@@ -13,7 +13,6 @@ const sizeSchema = new Schema({
 
 const productSchema = new Schema({
   shop_id: { required: true, type: SchemaTypes.ObjectId },
-  product_id: { type: String, uppercase: true },
   name: String,
   price: { type: Number, default: 0 },
   description: String,

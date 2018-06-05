@@ -41,7 +41,7 @@ const createProductMessage = ({ customer_id, product }) => {
     }
   };
 
-  console.log(JSON.stringify(ProductTemplateMessage, null, 3));
+  // console.log(JSON.stringify(ProductTemplateMessage, null, 3));
   return ProductTemplateMessage;
 };
 

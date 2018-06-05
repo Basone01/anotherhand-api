@@ -19,7 +19,7 @@ function verifyWebhookAPI(req, res, next) {
 async function handleFacebookMessage(req, res, next) {
 	try {
 		var FacebookMessages = req.body.entry.filter((msgEntry) => 'messaging' in msgEntry);
-		console.log(JSON.stringify(FacebookMessages, null, 3));
+		// console.log(JSON.stringify(FacebookMessages, null, 3));
 		await storeConversation(FacebookMessages);
 		await catchImageAttachment(FacebookMessages);
 		await catchPostback(FacebookMessages);
@@ -127,7 +127,7 @@ async function catchImageAttachment(messageEntry) {
 				const productsFromDB = await ProductModel.find({});
 				//tell the customer I'm finding
 				await services.FacebookAPI.sendMessage(customer_id, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
-				console.log('fsdgsfdgsdfgsdfg', productsFromDB);
+				// console.log('fsdgsfdgsdfgsdfg', productsFromDB);
 				//attachment always come in array
 				await utils.asyncForEach(msg.message.attachments, async (attachment, index, self) => {
 					//catch if it is image
