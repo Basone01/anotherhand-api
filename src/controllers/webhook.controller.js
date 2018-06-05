@@ -10,7 +10,8 @@ function verifyWebhookAPI(req, res, next) {
 	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN) {
 		console.log('Validating webhook');
 		return res.status(200).send(req.query['hub.challenge']);
-	} else {
+	}
+	else {
 		console.error('Failed validation. Make sure the validation tokens match.');
 		return res.sendStatus(403);
 	}
@@ -36,12 +37,12 @@ const storeConversation = async (messageEntry) => {
 		messageEntry.forEach(async (message) => {
 			const { messaging, id, time, ...rest } = message;
 			await utils.asyncForEach(messaging, async (msg) => {
-				console.log(id === msg.sender.id)
+				console.log(id === msg.sender.id);
 				await ConversationModel.update(
 					{
 						shop: config.DEV_SHOP_ID,
-						customer_id: id === msg.sender.id ? msg.recipient.id :  msg.sender.id,
-						shop_fb_id:id
+						customer_id: id === msg.sender.id ? msg.recipient.id : msg.sender.id,
+						shop_fb_id: id
 					},
 					{
 						$push: {
@@ -50,7 +51,7 @@ const storeConversation = async (messageEntry) => {
 						$set: {
 							time,
 							...rest,
-							shop_fb_id:id
+							shop_fb_id: id
 						}
 					},
 					{ upsert: true }
@@ -122,7 +123,7 @@ async function catchImageAttachment(messageEntry) {
 					// console.log("==================");
 					return;
 				}
-				if (!('sticker_id' in msg.message)) {
+				if ('sticker_id' in msg.message) {
 					console.log('=========THIS IS A STICKER=========');
 					// console.log(JSON.stringify(msg, null, 3));
 					// console.log("==================");
@@ -177,7 +178,8 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 		console.log(product);
 		if (!product) {
 			throw new Error('Product Not Found');
-		} else {
+		}
+		else {
 			if (product.sizes.length < 1) {
 				if (product.stock < 1) {
 					return await services.FacebookAPI.sendMessage(
@@ -186,7 +188,8 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 						'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋อออ~!!!'
 					);
 				}
-			} else {
+			}
+			else {
 				const total_stock = product.sizes.reduce((stock, size) => stock + size.stock, 0);
 				if (total_stock < 1) {
 					return await services.FacebookAPI.sendMessage(
@@ -197,18 +200,19 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 				}
 			}
 
-			const shop = await ShopModel.findOne({fb_page_id:shop_id})
+			const shop = await ShopModel.findOne({ fb_page_id: shop_id });
 			const order = new OrderModel({
 				product: product_id,
 				customer_id: customer_fb_id,
-				shop:shop._id,
+				shop: shop._id,
 				total_price: product.price
 			});
 			console.log(order);
 			const savedOrder = await order.save();
 			if (!savedOrder) {
 				throw new Error('Error When Creating Order');
-			} else {
+			}
+			else {
 				await services.FacebookAPI.sendMessage(customer_fb_id, config.FB_PAGE_TOKEN, 'โอเคค๊าบบบ');
 				await services.FacebookAPI.sendMessage(
 					customer_fb_id,
@@ -240,7 +244,8 @@ const handleMoreImage = async (customer_fb_id, shop_id, product_id) => {
 		product = product.toJSON({ virtuals: true });
 		if (!product) {
 			throw new Error('Product Not Found');
-		} else {
+		}
+		else {
 			product.images.forEach(async (image) => {
 				try {
 					await services.FacebookAPI.sendImage(customer_fb_id, config.FB_PAGE_TOKEN, image);
@@ -263,7 +268,8 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
 		console.log(product);
 		if (!product) {
 			throw new Error('Product Not Found');
-		} else {
+		}
+		else {
 			try {
 				let price = null;
 				if (product.sizes.length > 0) {
@@ -272,7 +278,8 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
 						Math.min(...sizes_price) < Math.max(...sizes_price)
 							? `${Math.min(...sizes_price)}-${Math.max(...sizes_price)}`
 							: Math.max(...sizes_price);
-				} else {
+				}
+				else {
 					price = product.price;
 				}
 
@@ -311,7 +318,8 @@ const findProductFromImageAndAnswerToCustomer = async (
 	if (!matchedResult) {
 		console.log('Not Found this Product!');
 		await services.FacebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}หาไม่เจอหงะ!!!`);
-	} else {
+	}
+	else {
 		const { matchedProduct, matchedImage } = matchedResult;
 		//response with the matched image
 		await services.FacebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}เจอล๊าวววว!!!`);
@@ -344,13 +352,16 @@ const getRemainingStockAnswerFromMatchedProduct = (matchedProduct) => {
 		if (allSizeStock > 0) {
 			const sizeList = getSizeListStringFromSizes(sizes, size_type);
 			answer = `ตอนนี้เหลือ\n${sizeList} นิหื๊ออออ~ \nพิเลือกๆๆเลย...`;
-		} else {
+		}
+		else {
 			answer = `แต่ตอนนี้ของหมดล๊าวว~ พิมะต้องเลือกๆ`;
 		}
-	} else {
+	}
+	else {
 		if (stock > 0) {
 			answer = `ตอนนี้เหลืออยู่ ${stock} อันนิหื๊ออออ~\nพิเลือกๆๆเลย...`;
-		} else {
+		}
+		else {
 			answer = `แต่ตอนนี้ของหมดล๊าวว~ พิมะต้องเลือกๆ`;
 		}
 	}
