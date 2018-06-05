@@ -7,10 +7,11 @@ const conversationSchema = new Schema({
 		unique: true
 	},
 	time: Number,
-	shop_id: {
-		type: String,
+	shop: {
+		type: SchemaTypes.ObjectId,
 		ref: "Shop"
 	},
+	shop_fb_id:String,
 	messaging: [
 		{
 			sender: {

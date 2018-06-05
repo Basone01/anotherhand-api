@@ -20,7 +20,7 @@ async function handleFacebookMessage(req, res, next) {
 	try {
 		var FacebookMessages = req.body.entry.filter((msgEntry) => 'messaging' in msgEntry);
 		console.log(JSON.stringify(FacebookMessages, null, 3));
-		// await storeConversation(FacebookMessages);
+		await storeConversation(FacebookMessages);
 		await catchImageAttachment(FacebookMessages);
 		await catchPostback(FacebookMessages);
 		return res.sendStatus(200);
@@ -36,10 +36,12 @@ const storeConversation = async (messageEntry) => {
 		messageEntry.forEach(async (message) => {
 			const { messaging, id, time, ...rest } = message;
 			await utils.asyncForEach(messaging, async (msg) => {
+				console.log(id === msg.sender.id)
 				await ConversationModel.update(
 					{
-						shop_id: config.DEV_SHOP_ID,
-						customer_id: id === msg.sender.id ? id : msg.sender.id
+						shop: config.DEV_SHOP_ID,
+						customer_id: id === msg.sender.id ? msg.recipient.id :  msg.sender.id,
+						shop_fb_id:id
 					},
 					{
 						$push: {
@@ -48,7 +50,7 @@ const storeConversation = async (messageEntry) => {
 						$set: {
 							time,
 							...rest,
-							id
+							shop_fb_id:id
 						}
 					},
 					{ upsert: true }
