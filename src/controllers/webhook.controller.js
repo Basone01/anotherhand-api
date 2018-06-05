@@ -122,7 +122,12 @@ async function catchImageAttachment(messageEntry) {
 					// console.log("==================");
 					return;
 				}
-
+				if (!('sticker_id' in msg.message)) {
+					console.log('=========THIS IS A STICKER=========');
+					// console.log(JSON.stringify(msg, null, 3));
+					// console.log("==================");
+					return;
+				}
 				//find all products
 				const productsFromDB = await ProductModel.find({});
 				//tell the customer I'm finding
