@@ -1,7 +1,5 @@
-const fs = require('fs');
 const axios = require('axios').default;
 const createTemplateMessage = require('./templateMessage/fabebookGenericTemplate');
-const { ROOT_DIR } = require('../../config');
 
 function getAttachmentId(image_url, token) {
 	return axios
