@@ -1,9 +1,5 @@
-const path = require("path");
 const mongoose = require("mongoose");
 const { Schema, SchemaTypes } = mongoose;
-const mkdirp = require("mkdirp");
-const base64toBuffer = require("../utils/base64decoder");
-const sharp = require("sharp");
 const sizeSchema = new Schema({
   size: SchemaTypes.Mixed,
   price: { type: Number, default: 0 },

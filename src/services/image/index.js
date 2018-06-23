@@ -1,8 +1,5 @@
 const axios = require("axios").default;
 const cv = require("opencv4nodejs");
-const {ROOT_DIR} = require("../../config");
-const path = require("path");
-const helper = require("../../utils/");
 const compareImage = async (image, templateImage) => {
   // this function parameter can accept path-string and buffer with different read
   // method

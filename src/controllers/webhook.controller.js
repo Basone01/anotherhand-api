@@ -2,7 +2,7 @@ const config = require('../config');
 const ConversationModel = require('../models/conversation');
 const utils = require('../utils');
 const services = require('../services');
-const mockupProductsArray = require('../utils/sampleProducts.json');
+// const mockupProductsArray = require('../utils/sampleProducts.json');
 const ProductModel = require('../models/product');
 const OrderModel = require('../models/order');
 const ShopModel = require('../models/shop');
@@ -21,9 +21,9 @@ async function handleFacebookMessage(req, res, next) {
 	try {
 		var FacebookMessages = req.body.entry.filter((msgEntry) => 'messaging' in msgEntry);
 		// console.log(JSON.stringify(FacebookMessages, null, 3));
-		await storeConversation(FacebookMessages);
-		await catchImageAttachment(FacebookMessages);
-		await catchPostback(FacebookMessages);
+		storeConversation(FacebookMessages);
+		catchImageAttachment(FacebookMessages);
+		catchPostback(FacebookMessages);
 		return res.sendStatus(200);
 	} catch (error) {
 		return next(error);
@@ -85,7 +85,6 @@ const catchPostback = async (messageEntry) => {
 							case 'placeOrder':
 								console.log('ORDER');
 								const order = await handlePlaceOrder(msg.sender.id, id, command._id);
-
 								break;
 							default:
 								break;
@@ -149,13 +148,13 @@ async function catchImageAttachment(messageEntry) {
 							and will return object contain matchedProduct(object) and matchedImage(path)
 							or return null if not found
 						*/
-						findProductFromImageAndAnswerToCustomer(
+						findProductFromImageAndAnswerToCustomer({
 							screenshotImage,
 							productsFromDB,
-							customer_id,
+							customerFbId: customer_id,
 							index,
-							self.length
-						);
+							length: self.length
+						});
 					}
 				});
 			});
@@ -180,24 +179,12 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 			throw new Error('Product Not Found');
 		}
 		else {
-			if (product.sizes.length < 1) {
-				if (product.stock < 1) {
-					return await services.FacebookAPI.sendMessage(
-						customer_fb_id,
-						config.FB_PAGE_TOKEN,
-						'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋อออ~!!!'
-					);
-				}
-			}
-			else {
-				const total_stock = product.sizes.reduce((stock, size) => stock + size.stock, 0);
-				if (total_stock < 1) {
-					return await services.FacebookAPI.sendMessage(
-						customer_fb_id,
-						config.FB_PAGE_TOKEN,
-						'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋ออ~!!!'
-					);
-				}
+			if (isProductOutOfStock(product)) {
+				return await services.FacebookAPI.sendMessage(
+					customer_fb_id,
+					config.FB_PAGE_TOKEN,
+					'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋อออ~!!!'
+				);
 			}
 
 			const shop = await ShopModel.findOne({ fb_page_id: shop_id });
@@ -271,22 +258,11 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
 		}
 		else {
 			try {
-				let price = null;
-				if (product.sizes.length > 0) {
-					const sizes_price = product.sizes.map((size) => size.price);
-					price =
-						Math.min(...sizes_price) < Math.max(...sizes_price)
-							? `${Math.min(...sizes_price)}-${Math.max(...sizes_price)}`
-							: Math.max(...sizes_price);
-				}
-				else {
-					price = product.price;
-				}
-
+				let displayPrice = getProductDisplayPriceRange(product);
 				await services.FacebookAPI.sendMessage(
 					customer_fb_id,
 					config.FB_PAGE_TOKEN,
-					`สินค้า: ${product.name}\nราคา: ${price} บาท\nรายละเอียด: ${product.description}`
+					`สินค้า: ${product.name}\nราคา: ${displayPrice} บาท\nรายละเอียด: ${product.description}`
 				);
 
 				await services.FacebookAPI.sendMessage(
@@ -306,13 +282,13 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
 };
 
 //start finding product from image
-const findProductFromImageAndAnswerToCustomer = async (
+const findProductFromImageAndAnswerToCustomer = async ({
 	screenshotImage,
 	productsFromDB,
 	customerFbId,
 	index,
 	length
-) => {
+}) => {
 	const matchedResult = await services.imageService.findMatchedProduct(screenshotImage, productsFromDB);
 	const answerPrefix = length > 1 ? `รูป${!index ? 'แรก' : `ที่ ${index + 1}`}:` : '';
 	if (!matchedResult) {
@@ -348,17 +324,22 @@ const getRemainingStockAnswerFromMatchedProduct = (matchedProduct) => {
 	let answer = '';
 
 	if (sizes.length > 0) {
+		// has sizes
 		const allSizeStock = getCountFromSizeArray(sizes);
 		if (allSizeStock > 0) {
+			// has remaining stock
 			const sizeList = getSizeListStringFromSizes(sizes, size_type);
 			answer = `ตอนนี้เหลือ\n${sizeList} นิหื๊ออออ~ \nพิเลือกๆๆเลย...`;
 		}
 		else {
+			//out of stock
 			answer = `แต่ตอนนี้ของหมดล๊าวว~ พิมะต้องเลือกๆ`;
 		}
 	}
 	else {
+		//no sizes
 		if (stock > 0) {
+			//has available stock
 			answer = `ตอนนี้เหลืออยู่ ${stock} อันนิหื๊ออออ~\nพิเลือกๆๆเลย...`;
 		}
 		else {
@@ -366,4 +347,31 @@ const getRemainingStockAnswerFromMatchedProduct = (matchedProduct) => {
 		}
 	}
 	return answer;
+};
+
+const isProductOutOfStock = (product) => {
+	if (product.sizes.length < 1) {
+		if (product.stock < 1) {
+			return true;
+		}
+	}
+	else {
+		const total_stock = product.sizes.reduce((stock, size) => stock + size.stock, 0);
+		if (total_stock < 1) {
+			return true;
+		}
+	}
+	return false;
+};
+
+const getProductDisplayPriceRange = (product) => {
+	if (product.sizes.length > 0) {
+		const sizes_price = product.sizes.map((size) => size.price);
+		return Math.min(...sizes_price) < Math.max(...sizes_price)
+			? `${Math.min(...sizes_price)}-${Math.max(...sizes_price)}`
+			: Math.max(...sizes_price);
+	}
+	else {
+		return product.price;
+	}
 };
