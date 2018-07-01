@@ -53,15 +53,9 @@ async function deleteOrder(req, res, next) {
 	try {
 		const deletingProduct = await OrderModel.findByIdAndRemove(_id);
 		console.log(deletingOrder);
-		rimraf(path.join(__dirname, `../public/images/${deletingOrder.shop_id}/${deletingOrder._id}`), (err) => {
-			if (err) {
-				console.log(err);
-				throw err;
-			}
-			res.json({
+		res.json({
 				success: true
 			});
-		});
 	} catch (error) {
 		next(error);
 	}

@@ -3,7 +3,10 @@ const catchPostback = require('../services/facebook/postbackHandler');
 const catchImageAttachment = require('../services/facebook/imageHandler');
 const storeConversation = require('../services/facebook/storeConversation');
 function verifyWebhookAPI(req, res, next) {
-	if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN) {
+	if (
+		req.query['hub.mode'] === 'subscribe' &&
+		req.query['hub.verify_token'] === config.FB_WEBHOOK_TOKEN
+	) {
 		console.log('Validating webhook');
 		return res.status(200).send(req.query['hub.challenge']);
 	}
@@ -14,13 +17,14 @@ function verifyWebhookAPI(req, res, next) {
 }
 
 async function handleFacebookMessage(req, res, next) {
+	const socketIO = req.socketIO;
 	try {
 		var FacebookMessages = req.body.entry.filter((msgEntry) => 'messaging' in msgEntry);
 		// console.log(JSON.stringify(FacebookMessages, null, 3));
-		console.log("i got a message")
-		storeConversation(FacebookMessages);
-		catchImageAttachment(FacebookMessages);
-		catchPostback(FacebookMessages);
+		console.log('i got a message');
+		storeConversation(FacebookMessages, socketIO);
+		catchImageAttachment(FacebookMessages, socketIO);
+		catchPostback(FacebookMessages, socketIO);
 		return res.sendStatus(200);
 	} catch (error) {
 		return next(error);
@@ -28,7 +32,6 @@ async function handleFacebookMessage(req, res, next) {
 }
 
 //end of route function
-
 
 module.exports = {
 	verifyWebhookAPI,

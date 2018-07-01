@@ -1,13 +1,12 @@
 const ConversationModel = require('../../models/conversation');
 const utils = require('../../utils/index');
 const config = require('../../config/index');
-const storeConversation = async (messageEntry) => {
+const storeConversation = async (messageEntry, socketIO) => {
 	try {
 		messageEntry.forEach(async (message) => {
 			const { messaging, id, time, ...rest } = message;
 			await utils.asyncForEach(messaging, async (msg) => {
-				console.log(id === msg.sender.id);
-				await ConversationModel.update(
+				const newMessage = await ConversationModel.update(
 					{
 						shop: config.DEV_SHOP_ID,
 						customer_id: id === msg.sender.id ? msg.recipient.id : msg.sender.id,
@@ -25,6 +24,8 @@ const storeConversation = async (messageEntry) => {
 					},
 					{ upsert: true }
 				);
+				console.log(newMessage);
+				socketIO.sockets.to(id).emit("msg", message);
 				console.log('customer:', id === msg.sender.id ? id : msg.sender.id);
 			});
 		});

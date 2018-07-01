@@ -51,10 +51,10 @@ async function catchImageAttachment(messageEntry) {
 							or return null if not found
 						*/
 						findProductFromImageAndAnswerToCustomer({
-							screenshotImage,
-							productsFromDB,
+							screenshotImage:screenshotImage,
+							productsFromDB:productsFromDB,
 							customerFbId: customer_id,
-							index,
+							index:index,
 							length: self.length
 						});
 					}
