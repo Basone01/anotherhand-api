@@ -6,10 +6,12 @@ const storeConversation = async (messageEntry, socketIO) => {
 		messageEntry.forEach(async (message) => {
 			const { messaging, id, time, ...rest } = message;
 			await utils.asyncForEach(messaging, async (msg) => {
-				const newMessage = await ConversationModel.update(
+				const customer_id =
+					id === msg.sender.id ? msg.recipient.id : msg.sender.id;
+				await ConversationModel.update(
 					{
 						shop: config.DEV_SHOP_ID,
-						customer_id: id === msg.sender.id ? msg.recipient.id : msg.sender.id,
+						customer_id: customer_id,
 						shop_fb_id: id
 					},
 					{
@@ -24,9 +26,8 @@ const storeConversation = async (messageEntry, socketIO) => {
 					},
 					{ upsert: true }
 				);
-				console.log(newMessage);
-				socketIO.sockets.to(id).emit("msg", message);
-				console.log('customer:', id === msg.sender.id ? id : msg.sender.id);
+				socketIO.sockets.to(id).emit('msg', { ...message, customer_id });
+				console.log('customer:', customer_id);
 			});
 		});
 	} catch (error) {
