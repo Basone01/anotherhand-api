@@ -1,6 +1,6 @@
 const ShopModel = require('../models/shop');
 
-async function createShop (req, res, next) {
+async function createShop(req, res, next) {
 	try {
 		const newShop = await ShopModel.create(req.body);
 		return res.json(newShop);
@@ -9,16 +9,18 @@ async function createShop (req, res, next) {
 	}
 }
 
-async function getShop (req, res, next) {
+async function getShop(req, res, next) {
 	try {
-		const myShop = await ShopModel.findOne({}).populate('products');
+		const myShop = await ShopModel.findOne({ _id: req.params.id }).populate(
+			'products'
+		);
 		return res.json(myShop);
 	} catch (error) {
 		return next(error);
 	}
 }
 
-async function deleteShop (req, res, next) {
+async function deleteShop(req, res, next) {
 	const { _id } = req.params;
 	try {
 		if (!_id) {
@@ -26,7 +28,7 @@ async function deleteShop (req, res, next) {
 		}
 		const result = await ShopModel.deleteOne({ _id });
 		return res.status(204).json({
-			success : true,
+			success: true,
 			result
 		});
 	} catch (error) {
