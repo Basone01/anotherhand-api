@@ -2,7 +2,7 @@ const ConversationModel = require('../models/conversation');
 const { getCustomerProfileFromPSID } = require('../services/facebook/index');
 
 async function getConversation(req, res, next) {
-	const skip = Number(req.query.skip) || 0;
+	const skip = Number(req.query.skip) || 6;
 	const { fb_page_id, fb_page_token } = req.body;
 	try {
 		const Conversation = await ConversationModel.find({

@@ -21,8 +21,8 @@ const conversationSchema = new Schema({
 				id: String
 			},
 			timestamp: Number,
-			message: [SchemaTypes.Mixed],
-			postback: [SchemaTypes.Mixed]
+			message: SchemaTypes.Mixed,
+			postback: SchemaTypes.Mixed
 		}
 	],
 	last_modified: {

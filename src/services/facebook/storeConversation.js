@@ -26,7 +26,11 @@ const storeConversation = async (messageEntry, socketIO) => {
 					},
 					{ upsert: true }
 				);
-				socketIO.sockets.to(id).emit('msg', { ...message, customer_id });
+				// console.log(messaging)
+				socketIO.sockets.to(id).emit('msg', {
+					...message,
+					customer_id
+				});
 				console.log('customer:', customer_id);
 			});
 		});
