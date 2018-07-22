@@ -30,7 +30,7 @@ async function handleFacebookMessage(req, res, next) {
 		console.log('i got a message');
 		storeConversation(FacebookMessages, socketIO);
 		catchImageAttachment(FacebookMessages, Shop.autoReply);
-		catchPostback(FacebookMessages, Shop.autoReply);
+		catchPostback(FacebookMessages,socketIO, Shop.autoReply);
 		return res.sendStatus(200);
 	} catch (error) {
 		return next(error);

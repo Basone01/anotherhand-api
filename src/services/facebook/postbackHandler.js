@@ -9,15 +9,22 @@ const ShopModel = require('../../models/shop');
 const FacebookAPI = require('./index');
 const utils = require('../../utils/index');
 const config = require('../../config/index');
+const { addCustomerProfileToOrder } = require('./index');
 //main function
-const catchPostback = async (messageEntry) => {
+const catchPostback = async (messageEntry, socket) => {
 	try {
 		messageEntry.forEach(async (message) => {
 			const { messaging, id, time, ...rest } = message;
 			await utils.asyncForEach(messaging, async (msg) => {
 				try {
 					if ('postback' in msg) {
-						const payload = JSON.parse(msg.postback.payload);
+						let payload = null;
+						try {
+							payload = JSON.parse(msg.postback.payload);
+						} catch (error) {
+							return;
+						}
+
 						switch (payload.req) {
 							case 'getDetails':
 								console.log('GET D');
@@ -31,6 +38,12 @@ const catchPostback = async (messageEntry) => {
 							case 'placeOrder':
 								console.log('ORDER');
 								const order = await handlePlaceOrder(msg.sender.id, id, payload._id);
+								const shop = await ShopModel.findOne({ fb_page_id: id });
+								const orderWithCustomerProfile = await addCustomerProfileToOrder(
+									order,
+									shop.fb_page_token
+								);
+								socket.sockets.to(id).emit('order', orderWithCustomerProfile);
 								break;
 							default:
 								break;
@@ -69,7 +82,8 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 				product: product_id,
 				customer_id: customer_fb_id,
 				shop: shop._id,
-				total_price: product.price
+				total_price: product.price,
+				date: Date.now()
 			});
 			console.log(order);
 			const savedOrder = await order.save();
@@ -97,7 +111,7 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 					token: config.FB_PAGE_TOKEN,
 					text: `เลขบัญชีมะบอกหรอก!~\nแต่ชำระเงินแล้วอย่าลืม\nส่งที่ชื่ออยู่ เบอร์โทรให้น้องบอทด้วยเน้อออ~`
 				});
-				return true;
+				return { ...savedOrder.toObject(), product };
 			}
 		}
 	} catch (error) {

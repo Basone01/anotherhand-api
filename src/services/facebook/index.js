@@ -92,11 +92,30 @@ const getPageProfileFromPSID = async ({id, token}) => {
 		})
 		.then((res) => res.data);
 };
+
+
+const addCustomerProfileToOrder = (order, token) => {
+	const orderWithCustomerDetails = new Promise(async (resolve, reject) => {
+		try {
+			const customer_profile = await getCustomerProfileFromPSID({
+				id: order.customer_id,
+				token: token
+			});
+			const orderWithCustomerProfile = { ...order, customer_profile };
+			resolve(orderWithCustomerProfile);
+		} catch (error) {
+			reject(error);
+		}
+	});
+
+	return orderWithCustomerDetails;
+};
 module.exports = {
 	getAttachmentId,
 	sendImage,
 	sendMessage,
 	sendProduct,
 	getCustomerProfileFromPSID,
-	getPageProfileFromPSID
+	getPageProfileFromPSID,
+	addCustomerProfileToOrder
 };

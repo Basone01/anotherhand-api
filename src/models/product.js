@@ -20,8 +20,8 @@ const productSchema = new Schema({
 		required: true
 	},
 	size_type: { type: String, default: '' },
-	date_created: { type: Date, default: Date.now() },
-	last_updated: { type: Date, default: Date.now() },
+	date_created: { type: Date, default: Date.now },
+	last_updated: { type: Date, default: Date.now },
 	sizes: [
 		sizeSchema
 	],

@@ -4,7 +4,7 @@ const OrderModel = require('../models/order');
 const ShopModel = require('../models/shop');
 const Types = require('mongoose').Types;
 const path = require('path');
-const { getCustomerProfileFromPSID } = require('../services/facebook');
+const { addCustomerProfileToOrder } = require('../services/facebook');
 async function createOrder(req, res, next) {
 	try {
 		const newOrder = await OrderModel.create(req.body);
@@ -40,7 +40,10 @@ async function getOrderById(req, res, next) {
 		if (!order) {
 			throw new Error('not found');
 		}
-		const orderWithCustomerProfile = await addCustomerProfileToOrder(order.toObject(), shop.fb_page_token);
+		const orderWithCustomerProfile = await addCustomerProfileToOrder(
+			order.toObject(),
+			shop.fb_page_token
+		);
 		return res.json(orderWithCustomerProfile);
 	} catch (error) {
 		return next(error);
@@ -54,30 +57,77 @@ async function deleteOrder(req, res, next) {
 		const deletingProduct = await OrderModel.findByIdAndRemove(_id);
 		console.log(deletingOrder);
 		res.json({
-				success: true
-			});
+			success: true
+		});
 	} catch (error) {
 		next(error);
 	}
 }
 
-const addCustomerProfileToOrder = (order, token) => {
-	const orderWithCustomerDetails = new Promise(async (resolve, reject) => {
-		try {
-			const customer_profile = await getCustomerProfileFromPSID({id:order.customer_id, token:token});
-			const orderWithCustomerProfile = { ...order, customer_profile };
-			resolve(orderWithCustomerProfile);
-		} catch (error) {
-			reject(error);
-		}
-	});
+async function updateOrderStatus(req, res, next) {
+	const { _id, currentStatus } = req.body;
+	if (!_id) next(new Error('no _id specified'));
+	let nextStatus;
+	switch (currentStatus) {
+		case 'Placed':
+			nextStatus = 'Pending';
+			break;
+		case 'Pending':
+			nextStatus = 'Paid';
+			break;
+		case 'Paid':
+			nextStatus = 'Sent';
+			break;
+		default:
+			nextStatus = currentStatus;
+			break;
+	}
+	try {
+		const updatedProduct = await OrderModel.findOneAndUpdate(
+			{ _id, status: currentStatus },
+			{
+				$set: {
+					status: nextStatus
+				}
+			},
+			{ new: true }
+		);
+		return res.json({
+			success: true,
+			result: updatedProduct
+		});
+	} catch (error) {
+		next(error);
+	}
+}
 
-	return orderWithCustomerDetails;
-};
+async function cancelOrder(req, res, next) {
+	const { _id } = req.body;
+	if (!_id) return next(new Error('no _id specified'));
+	try {
+		const updatedProduct = await OrderModel.findOneAndUpdate(
+			{ _id },
+			{
+				$set: {
+					status: 'Cancelled'
+				}
+			},
+			{ new: true }
+		);
+		return res.json({
+			success: true,
+			result: updatedProduct
+		});
+	} catch (error) {
+		next(error);
+	}
+}
 
 module.exports = {
 	getOrderById,
 	getAllOrders,
 	deleteOrder,
-	createOrder
+	createOrder,
+	updateOrderStatus,
+	cancelOrder
 };
