@@ -89,7 +89,10 @@ async function findMatchedProduct(loadedScreenshotBuffer, productArray) {
         };
       }
     }
-    return null;
+    return {
+      matchedProduct: null,
+      matchedImage: null
+    };
   } catch (error) {
     throw error;
   }

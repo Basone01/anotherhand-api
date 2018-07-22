@@ -64,7 +64,7 @@ async function deleteOrder(req, res, next) {
 const addCustomerProfileToOrder = (order, token) => {
 	const orderWithCustomerDetails = new Promise(async (resolve, reject) => {
 		try {
-			const customer_profile = await getCustomerProfileFromPSID(order.customer_id, token);
+			const customer_profile = await getCustomerProfileFromPSID({id:order.customer_id, token:token});
 			const orderWithCustomerProfile = { ...order, customer_profile };
 			resolve(orderWithCustomerProfile);
 		} catch (error) {

@@ -2,9 +2,14 @@ const FacebookAPI = require('./index');
 const utils = require('../../utils/index');
 const imageService = require('../image/index');
 const ProductModel = require('../../models/product');
+const ShopModel = require('../../models/shop');
 const { getProductRemainingStockAnswer } = require('../../models/productHelperFunction');
 const config = require('../../config/index');
-async function catchImageAttachment(messageEntry) {
+async function catchImageAttachment(messageEntry, isAutoReply) {
+	// console.log(isAutoReply)
+	if (!isAutoReply) {
+		return;
+	}
 	try {
 		messageEntry.forEach(async (messageObject) => {
 			const { messaging, id: shop_id } = messageObject;
@@ -34,8 +39,18 @@ async function catchImageAttachment(messageEntry) {
 				}
 				//find all products
 				const productsFromDB = await ProductModel.find({});
+				const shop = await ShopModel.findOne({ fb_page_id: shop_id });
+				if (!shop) {
+					throw new Error('Shop not found');
+				}
+				const token = shop.fb_page_token;
+
 				//tell the customer I'm finding
-				await FacebookAPI.sendMessage(customer_id, config.FB_PAGE_TOKEN, 'หาแปปเอ่าะ...');
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_id,
+					token: token,
+					text: 'หาแปปเอ่าะ...'
+				});
 				// console.log('fsdgsfdgsdfgsdfg', productsFromDB);
 				//attachment always come in array
 				await utils.asyncForEach(msg.message.attachments, async (attachment, index, self) => {
@@ -44,18 +59,18 @@ async function catchImageAttachment(messageEntry) {
 						console.log('I got an Image');
 						const screenshotImageUrl = attachment.payload.url;
 						const screenshotImage = await imageService.downloadImageToBuffer(screenshotImageUrl);
-						/*
-							Call an image search here
-							findMatchedProduct accept image url and products from database to compare
-							and will return object contain matchedProduct(object) and matchedImage(path)
-							or return null if not found
-						*/
-						findProductFromImageAndAnswerToCustomer({
-							screenshotImage:screenshotImage,
-							productsFromDB:productsFromDB,
-							customerFbId: customer_id,
-							index:index,
-							length: self.length
+
+						const { matchedProduct, matchedImage } = await imageService.findMatchedProduct(
+							screenshotImage,
+							productsFromDB
+						);
+						const answerPrefix =
+							self.length > 1 ? `รูป${!index ? 'แรก' : `ที่ ${index + 1}`}:` : '';
+						sendFindProductResult({
+							customer_id,
+							token: token,
+							product: matchedProduct,
+							answerPrefix
 						});
 					}
 				});
@@ -66,31 +81,33 @@ async function catchImageAttachment(messageEntry) {
 	}
 }
 
-//start finding product from image
-const findProductFromImageAndAnswerToCustomer = async ({
-	screenshotImage,
-	productsFromDB,
-	customerFbId,
-	index,
-	length
-}) => {
-	const matchedResult = await imageService.findMatchedProduct(screenshotImage, productsFromDB);
-	const answerPrefix = length > 1 ? `รูป${!index ? 'แรก' : `ที่ ${index + 1}`}:` : '';
-	if (!matchedResult) {
+const sendFindProductResult = async ({ customer_id, token, product, answerPrefix }) => {
+	if (!product) {
 		console.log('Not Found this Product!');
-		await FacebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}หาไม่เจอหงะ!!!`);
+		await FacebookAPI.sendMessage({
+			targetUserID: customer_id,
+			token,
+			text: `${answerPrefix}หาไม่เจอหงะ!!!`
+		});
 	}
 	else {
-		const { matchedProduct, matchedImage } = matchedResult;
 		//response with the matched image
-		await FacebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, `${answerPrefix}เจอล๊าวววว!!!`);
+		await FacebookAPI.sendMessage({
+			targetUserID: customer_id,
+			token,
+			text: `${answerPrefix}เจอล๊าวววว!!!`
+		});
 
-		let answer = getProductRemainingStockAnswer(matchedProduct);
+		let answer = getProductRemainingStockAnswer(product);
 
-		await FacebookAPI.sendMessage(customerFbId, config.FB_PAGE_TOKEN, answerPrefix + answer);
-		console.log('FOUND AT', matchedProduct);
+		await FacebookAPI.sendMessage({
+			targetUserID: customer_id,
+			token,
+			text: answerPrefix + answer
+		});
+		console.log('FOUND AT', product);
 
-		await FacebookAPI.sendProduct(customerFbId, config.FB_PAGE_TOKEN, matchedProduct);
+		await FacebookAPI.sendProduct({ customer_id: customer_id, token, products: product });
 	}
 };
 

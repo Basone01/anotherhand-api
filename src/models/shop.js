@@ -18,8 +18,13 @@ const shopModel = new Schema({
 		type: String,
 		required: true
 	},
-	orders: [ { type: SchemaTypes.ObjectId, ref: 'Order' } ],
-	products: [ { type: SchemaTypes.ObjectId, ref: 'Product' } ]
+	autoReply: {
+		type: Boolean,
+		default: true
+	}
+	// ,
+	// orders: [ { type: SchemaTypes.ObjectId, ref: 'Order' } ],
+	// products: [ { type: SchemaTypes.ObjectId, ref: 'Product' } ]
 });
 
 module.exports = mongoose.model('Shop', shopModel);

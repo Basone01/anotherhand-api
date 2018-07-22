@@ -1,5 +1,5 @@
 const config = require('../config');
-const { uploadImage } = require('../services/');
+const { uploadImage, imageService } = require('../services/');
 const ProductModel = require('../models/product');
 const ShopModel = require('../models/shop');
 const Types = require('mongoose').Types;
@@ -123,10 +123,29 @@ async function updateProduct(req, res, next) {
 	}
 }
 
+async function findProductByImage(req, res, next) {
+	const downloadedImage = await imageService.downloadImageToBuffer(req.body.imgUrl);
+	const products = await ProductModel.find({});
+	const { matchedProduct = null } = await imageService.findMatchedProduct(
+		downloadedImage,
+		products
+	);
+	if (matchedProduct) {
+		return res.json({
+			isFound: true,
+			product: matchedProduct
+		});
+	}
+	else {
+		return res.json({ isFound: false });
+	}
+}
+
 module.exports = {
 	getProductById,
 	getAllProducts,
 	createProduct,
 	deleteProduct,
-	updateProduct
+	updateProduct,
+	findProductByImage
 };

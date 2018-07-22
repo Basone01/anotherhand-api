@@ -57,11 +57,11 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 		}
 		else {
 			if (isProductOutOfStock(product)) {
-				return await FacebookAPI.sendMessage(
-					customer_fb_id,
-					config.FB_PAGE_TOKEN,
-					'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋อออ~!!!'
-				);
+				return await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: 'ก็บอกว่าของหมดไงฟร้ะะ!! \nฟังม่ายรุเรื่องอ๋อออ~!!!'
+				});
 			}
 
 			const shop = await ShopModel.findOne({ fb_page_id: shop_id });
@@ -77,19 +77,26 @@ const handlePlaceOrder = async (customer_fb_id, shop_id, product_id) => {
 				throw new Error('Error When Creating Order');
 			}
 			else {
-				await FacebookAPI.sendMessage(customer_fb_id, config.FB_PAGE_TOKEN, 'โอเคค๊าบบบ');
-				await FacebookAPI.sendMessage(
-					customer_fb_id,
-					config.FB_PAGE_TOKEN,
-					`${product.name} นะ
-          `
-				);
-				await FacebookAPI.sendMessage(customer_fb_id, config.FB_PAGE_TOKEN, `ทั้งหมด ${product.price} บาทจ้า`);
-				await FacebookAPI.sendMessage(
-					customer_fb_id,
-					config.FB_PAGE_TOKEN,
-					`เลขบัญชีมะบอกหรอก!~\nแต่ชำระเงินแล้วอย่าลืม\nส่งที่ชื่ออยู่ เบอร์โทรให้น้องบอทด้วยเน้อออ~`
-				);
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: 'โอเคค๊าบบบ'
+				});
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: `${product.name} นะ`
+				});
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: `ทั้งหมด ${product.price} บาทจ้า`
+				});
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: `เลขบัญชีมะบอกหรอก!~\nแต่ชำระเงินแล้วอย่าลืม\nส่งที่ชื่ออยู่ เบอร์โทรให้น้องบอทด้วยเน้อออ~`
+				});
 				return true;
 			}
 		}
@@ -108,7 +115,11 @@ const handleMoreImage = async (customer_fb_id, shop_id, product_id) => {
 		else {
 			product.images.forEach(async (image) => {
 				try {
-					await FacebookAPI.sendImage(customer_fb_id, config.FB_PAGE_TOKEN, image);
+					await FacebookAPI.sendImage({
+						targetUserID: customer_fb_id,
+						token: config.FB_PAGE_TOKEN,
+						imagePath: image
+					});
 				} catch (error) {
 					throw error;
 				}
@@ -132,17 +143,17 @@ const handleMoreDetails = async (customer_fb_id, shop_id, product_id) => {
 		else {
 			try {
 				let displayPrice = getProductDisplayPriceRange(product);
-				await FacebookAPI.sendMessage(
-					customer_fb_id,
-					config.FB_PAGE_TOKEN,
-					`สินค้า: ${product.name}\nราคา: ${displayPrice} บาท\nรายละเอียด: ${product.description}`
-				);
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: `สินค้า: ${product.name}\nราคา: ${displayPrice} บาท\nรายละเอียด: ${product.description}`
+				});
 
-				await FacebookAPI.sendMessage(
-					customer_fb_id,
-					config.FB_PAGE_TOKEN,
-					getProductRemainingStockAnswer(product)
-				);
+				await FacebookAPI.sendMessage({
+					targetUserID: customer_fb_id,
+					token: config.FB_PAGE_TOKEN,
+					text: getProductRemainingStockAnswer(product)
+				});
 
 				return true;
 			} catch (error) {

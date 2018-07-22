@@ -10,7 +10,6 @@ const storeConversation = async (messageEntry, socketIO) => {
 					id === msg.sender.id ? msg.recipient.id : msg.sender.id;
 				await ConversationModel.update(
 					{
-						shop: config.DEV_SHOP_ID,
 						customer_id: customer_id,
 						shop_fb_id: id
 					},

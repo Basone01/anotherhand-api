@@ -8,7 +8,18 @@ const orderSchema = new Schema({
 	shop: { type: SchemaTypes.ObjectId, ref: 'Shop' },
 	product: { type: SchemaTypes.ObjectId, ref: 'Product' },
 	size: SchemaTypes.Mixed,
-	date: { type: Date, default: new Date() }
+	date: { type: Date, default: new Date() },
+	status: {
+		type: String,
+		enum: [
+			'Placed',
+			'Pending',
+			'Paid',
+			'Sent',
+			'Cancelled'
+		],
+		default: 'Placed'
+	}
 });
 
 module.exports = mongoose.model('Order', orderSchema);

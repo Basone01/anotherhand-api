@@ -1,4 +1,5 @@
 const config = require('../config');
+const ShopModel = require('../models/shop');
 const catchPostback = require('../services/facebook/postbackHandler');
 const catchImageAttachment = require('../services/facebook/imageHandler');
 const storeConversation = require('../services/facebook/storeConversation');
@@ -20,11 +21,16 @@ async function handleFacebookMessage(req, res, next) {
 	const socketIO = req.socketIO;
 	try {
 		var FacebookMessages = req.body.entry.filter((msgEntry) => 'messaging' in msgEntry);
+		const Shop = await ShopModel.findOne(
+			{ fb_page_id: FacebookMessages[0].id },
+			'autoReply'
+		);
+		// console.log(Shop.autoReply)
 		// console.log(JSON.stringify(FacebookMessages, null, 3));
 		console.log('i got a message');
 		storeConversation(FacebookMessages, socketIO);
-		catchImageAttachment(FacebookMessages, socketIO);
-		catchPostback(FacebookMessages, socketIO);
+		catchImageAttachment(FacebookMessages, Shop.autoReply);
+		catchPostback(FacebookMessages, Shop.autoReply);
 		return res.sendStatus(200);
 	} catch (error) {
 		return next(error);
