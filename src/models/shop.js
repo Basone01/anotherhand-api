@@ -7,7 +7,7 @@ const shopModel = new Schema({
 	},
 	create_date: {
 		type: Date,
-		default: Date.now()
+		default: Date.now
 	},
 	fb_page_id: {
 		type: String,

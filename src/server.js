@@ -36,13 +36,13 @@ mongoose.connect(config.db, (err) => {
 			})
 		);
 		app.use(logger('dev'));
+		app.use(express.static(path.join(__dirname, 'public'), { index: '_' }));
 
 		app.get('/', (req, res) => {
 			return res.sendFile(path.join(__dirname, 'public/index.html'));
 		});
 
 		applyRoutes(app);
-		app.use(express.static(path.join(__dirname, 'public')));
 		app.get('*', (req, res) => {
 			return res.sendFile(path.join(__dirname, 'public/index.html'));
 		});
