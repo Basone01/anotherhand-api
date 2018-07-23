@@ -42,12 +42,10 @@ mongoose.connect(config.db, (err) => {
 		});
 
 		applyRoutes(app);
+		app.use(express.static(path.join(__dirname, 'public')));
 		app.get('*', (req, res) => {
 			return res.sendFile(path.join(__dirname, 'public/index.html'));
 		});
-
-		app.use(express.static(path.join(__dirname, 'public')));
-
 
 		app.use((err, req, res, next) => {
 			// console.error(err);
