@@ -4,7 +4,7 @@ const OrderModel = require('../models/order');
 const ShopModel = require('../models/shop');
 const Types = require('mongoose').Types;
 const path = require('path');
-const { addCustomerProfileToOrder } = require('../services/facebook');
+const { addCustomerProfileToOrder, sendMessage } = require('../services/facebook');
 async function createOrder(req, res, next) {
 	try {
 		const newOrder = await OrderModel.create(req.body);
@@ -68,15 +68,19 @@ async function updateOrderStatus(req, res, next) {
 	const { _id, currentStatus } = req.body;
 	if (!_id) next(new Error('no _id specified'));
 	let nextStatus;
+	let message;
 	switch (currentStatus) {
 		case 'Placed':
 			nextStatus = 'Pending';
+			message = 'โอ้วว!! โอนแล้วหรอ รอพ่อค้ามารับยอดแปปนึงเด้ออ';
 			break;
 		case 'Pending':
 			nextStatus = 'Paid';
+			message = 'รับยอดโอนแล้วเด้อออ เดี๋ยวส่งให้นะครัชช';
 			break;
 		case 'Paid':
 			nextStatus = 'Sent';
+			message = 'ส่งของแล้วจ้า รอรับได้เลย';
 			break;
 		default:
 			nextStatus = currentStatus;
@@ -92,6 +96,15 @@ async function updateOrderStatus(req, res, next) {
 			},
 			{ new: true }
 		);
+		const shop = await ShopModel.findById(updatedProduct.shop);
+		if (shop.autoReply) {
+			await sendMessage({
+				targetUserID: updatedProduct.customer_id,
+				token: shop.fb_page_token,
+				text: message
+			});
+		}
+
 		return res.json({
 			success: true,
 			result: updatedProduct

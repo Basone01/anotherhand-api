@@ -36,8 +36,8 @@ mongoose.connect(config.db, (err) => {
 			})
 		);
 		app.use(logger('dev'));
-		app.use(express.static(path.join(__dirname, 'public'),{index:"_"}));
-		app.use('/static',express.static(path.join(__dirname, 'public/static')));
+		app.use(express.static(path.join(__dirname, './public'),{index:"_"}));
+		app.use('/static',express.static(path.join(__dirname, './public/static')));
 
 		app.get('/', (req, res) => {
 			return res.sendFile(path.join(__dirname, 'public/index.html'));
