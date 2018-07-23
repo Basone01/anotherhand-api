@@ -31,6 +31,6 @@ RUN apk update && apk add -u --no-cache python make g++ \
   && npm i -g yarn
 WORKDIR /app
 COPY ./package.json /app
-# COPY . /app
+COPY . /app
 RUN yarn
 CMD ["nodemon","-L", "index.js"]

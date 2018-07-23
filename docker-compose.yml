@@ -6,8 +6,8 @@ services:
     image: basone01/anotherhand-app
     env_file:
       - ./.env
-    volumes:
-      - ./src:/app/src
+    # volumes:
+      # - ./src:/app/src
     ports:
       - 80:80
     # links:
