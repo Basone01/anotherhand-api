@@ -43,9 +43,6 @@ mongoose.connect(config.db, (err) => {
 		});
 
 		applyRoutes(app);
-		app.get('*', (req, res) => {
-			return res.sendFile(path.join(__dirname, 'public/index.html'));
-		});
 
 		app.use((err, req, res, next) => {
 			// console.error(err);
