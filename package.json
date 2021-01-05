@@ -5,7 +5,7 @@
   "author": "DESKTOP-OK4OG5A\\Basone01 <basone01@hotmail.com>",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.18.2",
     "cloudinary": "^1.11.0",
     "cors": "^2.8.4",
